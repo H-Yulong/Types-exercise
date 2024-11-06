@@ -1,0 +1,122 @@
+
+\usepackage[margin=25mm, top=20mm]{geometry} % for setting page borders etc
+\usepackage{amsmath}  % for math arrays and many math stuff
+\usepackage{amsfonts} % for math fonts
+\usepackage[colorlinks=true, allcolors=violet]{hyperref} % for hyperlink
+\usepackage{multicol} % for multi-columns; \begin{multicols}{n}
+\usepackage{bbding}
+\usepackage{enumitem}
+\usepackage[euler]{textgreek} % for greek letters in text
+
+% \setlength{\parskip}{10pt}
+
+%% Citations
+\usepackage{nameref}
+\usepackage{cleveref}
+\crefformat{section}{\S#2#1#3}
+\crefmultiformat{section}{\S\S#2#1#3}{ and~#2#1#3}{, #2#1#3}{, and~#2#1#3}
+\crefformat{figure}{Fig.~#2#1#3}
+% \citestyle{acmauthoryear}
+
+%% ACM conference paper style font
+\RequirePackage[T1]{fontenc} 
+\RequirePackage[tt=false, type1=true]{libertine} 
+\RequirePackage[varqu]{zi4} 
+\RequirePackage[libertine]{newtxmath}
+\renewcommand\ttdefault{cmtt}
+
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+
+\usepackage{multirow}
+
+\usepackage{scalerel}
+\newcommand\shortarrow{\hstretch{0.7}{\rightarrow}}
+
+\usepackage{listings} % for code listings; \begin{lstlisting}
+\lstset{
+  mathescape=true,
+  frame=none,
+  xleftmargin=0.8em,
+  columns=fullflexible,
+  basicstyle=\ttfamily,
+  commentstyle={\color{gray!60!blue}\ttfamily},
+  extendedchars=true,
+  showstringspaces=false,
+  aboveskip=\medskipamount,
+  belowskip=\medskipamount,
+  moredelim=**[is][\color{blue}]{/*}{*/},
+  moredelim=**[is][\color{green!60!black}]{/!}{!/},
+  moredelim=**[is][\color{gray}]{/(}{)/},
+  moredelim=[is][\color{red}]{/[}{]/}
+}
+
+%%
+\newtheorem{theorem}{Theorem}[section]
+\newtheorem{lemma}[theorem]{Lemma}
+\newtheorem{definition}[theorem]{Definition}
+\newtheorem{coro}[theorem]{Corollary}
+
+\newenvironment{syntax}{\[\begin{array}{l@{\quad}lcl}}{\end{array}\]}
+
+\usepackage{bussproofs} % bussproofs
+
+% Hack: wrap proof trees in a box as wide as the proof
+% To fit multiple trees in one line
+\newenvironment{bprooftree}
+  {\leavevmode\hbox\bgroup}
+  {\DisplayProof\egroup}
+
+\usepackage{tikz} % for drawing diagrams
+\usetikzlibrary{calc}
+\usetikzlibrary{shapes}
+\usetikzlibrary{positioning}
+\usetikzlibrary{fit}
+\usetikzlibrary{cd}
+
+\raggedbottom
+
+% Custom commands for typesetting
+\newcommand{\semicolon}{\, ;}
+\newcommand{\tightcolon}{{\:\!:\:\!}}
+\newcommand{\gooddot}{.\;\!}
+
+\newcommand{\lam}[3]{\lambda #1 \,{:}\, #2 .\; #3}
+\newcommand{\Lam}[2]{\Lambda #1 \gooddot #2}
+\newcommand{\app}[2]{#1 \, #2}
+\newcommand{\fora}[2]{\forall #1 \gooddot #2}
+\newcommand{\exist}[2]{\exists #1 \gooddot #2}
+\newcommand{\newcon}{\cdot\, ; \cdot}
+\newcommand{\var}[2]{#1 \,{:}\, #2}
+\newcommand{\ifthen}[3]{\mathsf{if}\ #1 \ \mathsf{then}\ #2 \ \mathsf{else}\ #3}
+\newcommand{\true}{\mathsf{true}}
+\newcommand{\false}{\mathsf{false}}
+\newcommand{\Bool}{\mathsf{Bool}}
+\newcommand{\Halt}{\textbf{Halt}}
+\newcommand{\sub}[2]{[#1] #2}
+\newcommand{\pack}[3]{\mathsf{pack}_{#1}(#2,#3)}
+\newcommand{\yes}{\mathsf{yes}}
+\newcommand{\no}{\mathsf{no}}
+\newcommand{\cho}{\mathsf{choose}}
+\newcommand{\fst}{\mathsf{fst}}
+\newcommand{\snd}{\mathsf{snd}}
+\newcommand{\CList}{\mathsf{CList}}
+\newcommand{\nat}{\mathsf{nat}}
+\newcommand{\state}[2]{\langle #1, #2 \rangle}
+\newcommand{\letseq}[3]{\mathsf{let}\ #1 = #2;\, #3}
+\newcommand{\ret}[1]{\mathsf{return}\ #1}
+\newcommand{\reduces}{\rightsquigarrow^*}
+\newcommand{\type}{\mathsf{type}}
+\newcommand{\sem}[1]{\lBrack #1 \rBrack}
+\newcommand{\lamu}[3]{\mu #1 \,{:}\, #2 .\; #3}
+\newcommand{\contra}[3]{\langle #1 \mid_{#2} #3 \rangle}
+\newcommand{\refl}[1]{\mathsf{refl}\ #1}
+\newcommand{\id}[3]{(#1 = #2 : #3)}
+\newcommand{\subst}[5]{\mathsf{subst}[\var{#1}{#2} \gooddot #3](#4, #5)}
+\newcommand{\Pitype}[3]{\Pi #1 \,{:}\, #2 \gooddot #3}
+\newcommand{\Tcirc}[1]{{#1}^{\circ}}
+\newcommand{\Tdot}[1]{{#1}^{\bullet}}
+\newcommand{\qneg}[1]{\sim\!\!#1}
+\newcommand{\Jrule}[4]{\mathsf{J}[#1 \gooddot #2](#3, #4)}
+\newcommand{\hole}[1]{\mathcal{C}[#1]}
+

@@ -1,0 +1,378 @@
+\documentclass[11pt,a4paper,twoside]{article}
+
+\include{packages}
+
+\begin{document}
+\begin{center}
+{\Huge Part II Types: Example Sheet 2}\\
+\vspace{1.0em}
+{\large Yulong Huang and Yufeng Li}\\
+\vspace{0.5em}
+{\small Department of Computer Science and Technology \\ University of Cambridge \\ Oct 2024}\\
+\vspace{1.0em}
+\small{\textit{The tips and some questions are due to the previous example sheet by Nathanael Arkor, Dylan McDermott, Sam Steenkamp, Domagoj Stolfa, et al., which has questions from Benjamin C.~Pierce and Andrew M.~Pitts.}}
+\end{center}
+
+\section*{Tips}
+
+\begin{itemize}
+
+\item When writing proofs, it can sometimes be ambiguous to say that something holds ``by induction'' when you mean ``by the inductive hypothesis''. When that is the case, try to be clear about what you are using.
+
+\item Try to write proofs in one direction. Avoid writing some steps of the proof next to other ones without numbering them.
+
+\end{itemize}
+
+\section*{Exercises}
+
+The following exercises are about the topics covered from Lectures 5 to 8.
+
+\subsection*{V. Church Encoding in System F}
+
+% YH
+\paragraph{Question 1} Define the Church encoding for the following types in System F.
+You need to give the type definition (like $\mathsf{bool} := \dots$), the constructors (like $\true$ and $\false$),
+and the eliminator (like $\mathsf{if\text{-}and\text{-}else}$).
+
+\begin{enumerate}[label=(\alph*)]
+  \item The unit type.
+  \item The empty type.
+  \item The booleans.
+  \item The natural numbers.
+  \item The option type for some fixed type $A$.
+\end{enumerate}
+
+% YH, partly due to Pierce's TPL exercises
+\paragraph{Question 2} The predecessor function $\mathsf{pred}$ maps $0$ to $0$ and $\mathsf{suc}\ n$ to $n$.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define $\mathsf{pred}$ for Church numerals in System F, using the pair $(n, \mathsf{suc}\ n)$.
+
+  \item Is there another way to define $\mathsf{pred}$? \emph{(Hint: the option type.)}
+
+  \item Approximately, how many steps of evaluation (as a function of $n$) are required to calculate $\mathsf{pred}\ n$?
+\end{enumerate}
+
+% YH, inspired by Question 6 from Alcock et al., and Yufeng Li
+\paragraph{Question 3} This question considers System F extended with the unit type $1$ and sum types $A + B$.
+Let $F := 1 + \beta$ (such that $\beta \vdash F\ \mathsf{type}$),
+and let $F(X)$ stands for $\sub{X / \beta}{F}$.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define a function $\mathsf{fmap}$ such that
+  \[ \newcon \vdash \mathsf{fmap} : 
+    \fora{\beta_1}{\fora{\beta_2}{(\beta_1 \to \beta_2) \to F(\beta_1) \to F(\beta_2)}}. \]
+  
+  \item Let $\mu F := \fora{\beta}{(F(\beta) \to \beta) \to \beta}$.
+  % (that is, $\mu F := \fora{\beta}{((1 + \beta) \to \beta) \to \beta}$).
+  Define a function $\mathsf{fold}$ such that
+  \[ \newcon \vdash \mathsf{fold} : \fora{\alpha}{(F(\alpha) \to \alpha) \to \mu F \to \alpha}.
+  \]
+
+  \item Define terms $\var{\mathsf{zero}}{\mu F}$, $\var{\mathsf{suc}}{\mu F \to \mu F}$,
+  and show that $\mu F$ is an encoding of natural numbers
+  by defining the iterator.
+\end{enumerate}
+
+% from Pierce's TPL exercises
+\paragraph{Question 4} Let $\mathsf{CBool}$ be the type of Church-encoded booleans.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define $\newcon \vdash \mathsf{and} : \mathsf{CBool} \to \mathsf{CBool} \to \mathsf{CBool}$,
+  which returns the conjunction of its inputs.
+  
+  \item Define $\newcon \vdash \mathsf{or} : \mathsf{CBool} \to \mathsf{CBool} \to \mathsf{CBool}$,
+  which returns the disjunction of its inputs.
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2023P9Q13(b), 2022P8Q13(a), 2021P8Q15(b), 2019P9Q14.
+
+\subsection*{VI. Existential and Semantic Types}
+
+% due to Dylan
+\paragraph{Question 5} This question considers System F extended with product types $A \times B$ and existential types $\exist{\alpha}{A}.$
+The type signature $\Bool$ is given by
+  \[ \Bool \,:=\, (\beta \times \beta) \times \fora{\alpha}{\beta \to \alpha \to \alpha \to \alpha} \]
+such that $\beta \vdash \Bool\ \mathsf{type}$. 
+You can think of $\beta$ as an implementation of the boolean type,
+and $\Bool$ as an abbreviation for 
+$(\beta \times \beta) \times \fora{\alpha}{\beta \to \alpha \to \alpha \to \alpha}$,
+which is a package with the following three components:
+% Centering here?
+\begin{align*}
+  \yes    & := \fst(\fst\ b) & \beta \semicolon \var{b}{\Bool} & \vdash \yes : \beta \\
+  \no     & := \snd(\fst\ b) & \beta \semicolon \var{b}{\Bool} & \vdash \no : \beta \\
+  \cho    & := \snd\ b       & \beta \semicolon \var{b}{\Bool} & \vdash \cho : \fora{\alpha}{\beta \to \alpha \to \alpha \to \alpha}.
+\end{align*}
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define a term $\mathsf{and}$ such that
+    \[ \beta \semicolon \var{b}{\Bool} \vdash \mathsf{and} : \beta \to \beta \to \beta \]
+  and it returns the conjunction of its two inputs.
+
+  \item Define a term $\mathsf{extend}$ such that
+    \[ \newcon \vdash \mathsf{extend} : 
+      (\exist{\beta}{\Bool}) \to (\exist{\beta}{\Bool \times (\beta \to \beta \to \beta)}) \]
+  and it extends an implementation of $\Bool$ with $\mathsf{and}$.
+
+  \item What should the type signature $\mathsf{Nat}$ for natural numbers be?
+\end{enumerate}
+
+\paragraph{Question 6} Complete the exercises from Lecture 6.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Prove the other direction of closure for the $\Theta \vdash \fora{\alpha}{A}\ \mathsf{type}$ case.
+
+  \item Prove the other direction of substitution for the $\Theta \vdash \fora{\alpha}{A}\ \mathsf{type}$ case.
+
+  \item Prove the fundamental lemma for the $\Theta \semicolon \Gamma \vdash \Lam{\alpha}{e} : \fora{\alpha}{A}$ case
+  ($\forall$-introduction).
+
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2024P9Q13(b), 2021P9Q15(c), 2020P9Q15(a).
+
+\subsection*{VII. Type Systems with States}
+
+% YH, Adapted from Exercise 2 of Lecture 7
+\paragraph{Question 7} Consider the type system with states introduced in Lecture 7.
+
+ \begin{enumerate}[label=(\alph*)]
+  \item State the progress and preservation properties of this type system.
+
+  \item Extend the type system with a C-style $\mathsf{free()}$ operation
+  that de-allocates a reference. 
+  Give the syntax, operational semantics, and typing rules.
+
+  \item Is type safety still true in your extended system? 
+  % \emph{(Hint: consider anomalies such as use-after-free and double-free.)}
+\end{enumerate} 
+
+% YH, contains exercises from Lecture 7
+\paragraph{Question 8} Below is the Landin's knot as introduced in the lectures, written in OCaml.
+\begin{lstlisting}
+  let knot f =
+    let r = ref (fun n -> 0) in
+    let recur n = !r n in
+      r := (fun n -> f recur n);
+      recur
+\end{lstlisting}
+
+\vspace{-1em}
+
+\begin{enumerate}[label=(\alph*)]
+  \item What are the types of \texttt{f}, \texttt{r}, and \texttt{recur},
+  and what is the type of \texttt{knot}?
+
+  \item A fixed point of $\var{f}{(\nat \to \nat) \to \nat \to \nat}$
+    is a function $\var{\mathsf{fix}\ f}{\nat \to \nat}$ such that
+    \[ (\mathsf{fix}\ f)\ x \reduces f\ (\mathsf{fix}\ f)\ x\]
+  for all $x$. 
+  Show that $\texttt{recur}$, the return value of $\texttt{knot}\ f$,
+  is a fixed point of $f$.
+
+  \item Use \texttt{knot} to implement the Fibonacci function, and an infinite loop.
+
+  \item Define the polymorphic version of Landin's knot, with type  
+  $((\alpha \to \alpha) \to \alpha \to \alpha) \to \alpha \to \alpha$.
+\end{enumerate} 
+
+\paragraph{Tripos Question} 2020P9Q15(c).
+
+\subsection*{VIII. Monadic Type Systems}
+
+% YH, inspired by 2022P8Q13(c)
+\paragraph{Question 9} Implement Landin's knot in the monadic language as introduced in Lecture 8,
+such that  
+  \[
+    \newcon \vdash \mathsf{knot} : 
+    ((\mathsf{int} \to T(\mathsf{int})) \to \mathsf{int} \to T(\mathsf{int})) \to \mathsf{int} \to T(\mathsf{int}).
+  \]
+
+
+% YH, adapted from 2022P8Q13(c), and Question 5 (due to Dylan and Ian) from Alcock et al.
+\paragraph{Question 10} This question considers the monadic language as introduced in Lecture 8.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Given types $X$ and $Y$, define the following terms, and briefly explain what they do.
+    \begin{enumerate}[label=(\roman*)]
+      \item $\newcon \vdash \eta_X : X \to TX$
+      \item $\newcon \vdash \mu_{X} : T(TX) \to TX$
+      \item $\newcon \vdash \mathsf{fmap} : (X \to Y) \to TX \to TY$
+    \end{enumerate}
+
+  \item Show that your definitions in part (a) satisfies the following properties:
+    \begin{enumerate}[label=(\roman*)]
+      \item For all values $\var{v}{TX}$ and $\var{v'}{X}$, where 
+      $\state{\sigma}{\letseq{x}{v}{\ret{x}}} \reduces \state{\sigma'}{\ret{v'}}$,
+        \[
+          \state{\sigma}{\letseq{y}{\mu_X(\app{\eta_{TX}}{v})}{\ret{y}}}
+            \reduces
+          \state{\sigma'}{\ret{v'}}.
+        \]
+
+      \item For all terms $\var{f}{X \to Y}$, $\var{v}{X}$, and $\var{v'}{Y}$, where $\app{f}{v} \reduces v'$,
+        \[
+          \state{\sigma}{\letseq{y}{\app{\app{\mathsf{fmap}}{f}}{\{\ret{v}\}}}{\ret{y}}}
+            \reduces 
+          \state{\sigma}{\ret{v'}}.
+        \]
+      
+    \end{enumerate}
+
+    \item You might recall from Part IB Concepts in Programming Languages that monads have a ``binding'' operator.
+    Given types $X$ and $Y$, define a function $\mathsf{bind}$ such that
+      \[ \newcon \vdash \mathsf{bind} : TX \to (X \to TY) \to TY \]
+    and for all values $\var{v}{X}$ and functions $\var{f}{X \to TY}$,
+    where $\state{\sigma}{\app{f}{v}} \reduces \state{\sigma'}{\{\ret{v'}\}}$,
+      \[ 
+        \state{\sigma}{\app{\app{\mathsf{bind}}{\{\ret{v}}\}}{f}} 
+          \reduces
+        \state{\sigma'}{\{\ret{v'}\}}.
+      \]
+    Can you define it in terms of $\eta$, $\mu$, and $\mathsf{fmap}$?
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2022P8Q13(b), 2021P9Q15(b), 2020P9Q15(b).
+
+\section*{Extensions}
+
+The following optional exercises further explore the topics introduced in the lectures. These questions might not be the most helpful ones for preparing the tripos, but they are surely interesting to think about if you enjoy type theory. Use the extension keywords to venture even further beyond the course.
+
+% Pierce TPL exercise 23.4.5
+\paragraph{Question B1} Define $\mathsf{equal}$, a function that tests if two Church numerals are equal, returning a Church boolean. Can you define it in the form of $\mathsf{equal}(m, n) = \mathsf{iter}\ m\ X\ e_z\ e_s$ for some $X$, $e_z$, and $e_s$?
+
+% Pierce TPL exercise 5.2.7
+% \paragraph{Question A2} Let $\CList_X$ stands for the Church encoding of lists of elements of type $X$.
+% \begin{enumerate}[label=(\alph*)]
+%   \item Define a function $\mathsf{isNil}$ that tests if a Church-encoded list is empty, returning a Church boolean.
+
+%   \item Define a function $\mathsf{head} : X \to \CList_X \to X$ 
+%   that returns the first argument if the list is empty,
+%   and the head of the list otherwise.
+
+%   \item Define a function $\mathsf{tail} : \CList_X \to \CList_X$ 
+%   that returns an empty list if the input list is empty,
+%   and the tail of the list otherwise.
+% \end{enumerate}
+
+% Generalized version of Question 3, YH
+\paragraph{Question B2} This question considers System F extended with product types $A \times B$ and sum types $A + B$.
+Let $F$ be a type generated from the following grammar:
+  \[
+    F := \beta \mid A \mid F \times F' \mid F + F' \mid A \to F
+  \]
+where $\Theta \vdash A\ \type$ and $\beta \notin \Theta$, 
+such that $\Theta, \beta \vdash F\ \type$. 
+Let $F(X)$ stands for $\sub{X / \beta}{F}$.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Show that for all $F$, it is possible to define a function $\mathsf{fmap}$ such that
+  \[ \Theta \semicolon \cdot \vdash \mathsf{fmap} : 
+    \fora{\beta_1}{\fora{\beta_2}{(\beta_1 \to \beta_2) \to F(\beta_1) \to F(\beta_2)}}. \]
+  
+  \item Let $\mu F := \fora{\beta}{(F(\beta) \to \beta) \to \beta}$.
+  Define functions $\mathsf{fold}$ and $\mathsf{intro}$ such that
+  \begin{align*}
+    \Theta \semicolon \cdot &\vdash \mathsf{fold}  : \fora{\alpha}{(F(\alpha) \to \alpha) \to \mu F \to \alpha} \\
+    \Theta \semicolon \cdot &\vdash \mathsf{intro} : F(\mu F) \to \mu F.
+  \end{align*}
+  \emph{(Hint: you can use $\mathsf{fold}$ to define $\mathsf{intro}$.)}
+
+  \item Define a function $\mathsf{unfold}$ such that
+    $\Theta \semicolon \cdot \vdash \mathsf{unfold} : F (\mu F) \to \mu F$.
+
+  \item In terms of Church-encoded datatypes, what does $\mu F$, $F(\mu F)$, $\mathsf{intro}$, $\mathsf{fold}$, and $\mathsf{unfold}$ correspond to? Can you encode the datatypes in Question 1 by choosing appropriate instances of $F$?
+\end{enumerate}
+
+% due to Dylan
+\paragraph{Question B3} Let $\beta$ be a type variable.
+For this question, $\Theta$ ranges over type contexts that do not contain $\beta$.
+We define the judgements of positive and negative types, 
+$\Theta \vdash A\ \type^+$ and $\Theta \vdash A\ \type^-$, by:
+
+\begin{center}
+  \begin{bprooftree}
+    \AxiomC{}
+    \UnaryInfC{$\Theta \vdash \beta\ \type^+$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\alpha \in \Theta$}
+    \UnaryInfC{$\Theta \vdash \alpha\ \type^+$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\Theta \vdash A\ \type^-$}
+    \AxiomC{$\Theta \vdash B\ \type^+$}
+    \BinaryInfC{$\Theta \vdash A \to B\ \type^+$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\Theta, \alpha \vdash A\ \type+$}
+    \AxiomC{$\alpha \neq \beta$}
+    \BinaryInfC{$\Theta \vdash \fora{\alpha}{A}\ \type^+$}
+  \end{bprooftree}
+
+  \vspace{0.5em}
+
+  \begin{bprooftree}
+    \AxiomC{$\alpha \in \Theta$}
+    \UnaryInfC{$\Theta \vdash \beta\ \type^-$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\Theta \vdash A\ \type^+$}
+    \AxiomC{$\Theta \vdash B\ \type^-$}
+    \BinaryInfC{$\Theta \vdash A \to B\ \type^-$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\Theta, \alpha \vdash A\ \type^-$}
+    \AxiomC{$\alpha \neq \beta$}
+    \BinaryInfC{$\Theta \vdash \fora{\alpha}{A}\ \type^-$}
+  \end{bprooftree}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+  \item Given types $A$ and $B$ such that $\Theta \vdash A\ \type^+$ and $\Theta \vdash B\ \type^-$,
+  define terms $\mathsf{fmap}^+_{\Theta, A}$ and $\mathsf{fmap}^-_{\Theta, B}$ such that
+    \begin{align*}
+      \Theta \semicolon \cdot &\vdash \mathsf{fmap}^+_{\Theta, A} : 
+        \fora{\beta_1}{\fora{\beta_2}{(\beta_1 \to \beta_2) \to \sub{\beta_1 / \beta}{A} \to \sub{\beta_2 / \beta}{A}}} \\
+      \Theta \semicolon \cdot &\vdash \mathsf{fmap}^-_{\Theta, B} : 
+        \fora{\beta_1}{\fora{\beta_2}{(\beta_1 \to \beta_2) \to \sub{\beta_1 / \beta}{B} \to \sub{\beta_2 / \beta}{B}}}.
+    \end{align*}
+  \emph{(Hint: define by induction on the derivations of $\Theta \vdash A\ \type^+$ and $\Theta \vdash B\ \type^-$.)}
+
+  \item By considering $\sem{\Theta \vdash \fora{\alpha}{\alpha}\ \type}$, 
+  show that there is no closed term of type $\fora{\alpha}{\alpha}$.
+  Deduce that the adding the rule
+  \[
+    \begin{bprooftree}
+      \AxiomC{}
+      \UnaryInfC{$\Theta \vdash \beta\ \type^-$}
+    \end{bprooftree}
+  \]
+  would make part (a) impossible to answer.
+
+  \item Suppose that $X$ and $X'$ are semantic types and $X \subseteq X'$.
+  Show that (for just a few cases) if $\Theta \vdash A\ \type^+$ and $\Theta \vdash B\ \type^-$ then for all $\theta$,
+    \begin{align*}
+      \sem{\beta, \Theta \vdash A\ \type}(X/\beta, \theta)
+        & \subseteq
+      \sem{\beta, \Theta \vdash A\ \type}(X'/\beta, \theta)
+      \\
+      \sem{\beta, \Theta \vdash B\ \type}(X/\beta, \theta)
+        & \supseteq
+      \sem{\beta, \Theta \vdash B\ \type}(X'/\beta, \theta).
+    \end{align*}
+\end{enumerate}
+
+\paragraph{Extension Keywords} Functors (OCaml), type classes (Haskell), strictly-positive types, polynomial functors, initial algebra semantics, Lambek's theorem, parametricity.
+
+% Yufeng's Section 2
+% Unification for System F is undecidable
+% Explain commutative diagrams for more concise question making
+
+\end{document}

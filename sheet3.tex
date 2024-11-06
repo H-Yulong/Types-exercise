@@ -1,0 +1,411 @@
+\documentclass[11pt,a4paper,twoside]{article}
+
+\include{packages}
+
+\lstset{literate=%
+{->}{{$\mathtt{\rightarrow}\ $}}1
+}
+
+\begin{document}
+\begin{center}
+{\Huge Part II Types: Example Sheet 3}\\
+\vspace{1.0em}
+{\large Yulong Huang and Yufeng Li}\\
+\vspace{0.5em}
+{\small Department of Computer Science and Technology \\ University of Cambridge \\ Oct 2024}\\
+\vspace{1.0em}
+\small{\textit{Some questions are due to the previous example sheet by Nathanael Arkor, Dylan McDermott, Sam Steenkamp, Domagoj Stolfa, et al., which has questions from Benjamin C.~Pierce and Andrew M.~Pitts.}}
+\end{center}
+
+\section*{Tips}
+
+\begin{itemize}
+\item Familiarize yourself with the CPS transformation from Part IB Compiler Construction course. 
+The key is that instead of returning a value, 
+we pass the value down to a subsequent computation, i.e.~a continuation.
+
+\item When you are defining typed transformations on terms, write down the expected type of your output
+and let the it guide you.
+Also, note that we overload $\Tdot{(-)}$ for transformations on contexts, terms, and types,
+but it is always clear which transformation we are referring to.
+
+\item If you have time, download and install 
+\href{https://agda.readthedocs.io/en/latest/getting-started/installation.html}{Agda},
+and try out some of the examples from the lectures and this sheet
+to get the intuition of programming with dependent types.
+\end{itemize}
+
+\section*{Exercises}
+
+The following exercises are about the topics covered from Lectures 9 to 12.
+
+\subsection*{IX. Classical Logic}
+
+% YH, contains exercises from Lecture 9
+\paragraph{Question 1} Derive the following entailments with the natural deduction system for classical logic as introduced in Lecture 9.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Double negation : \ $\neg\neg A \semicolon \cdot \vdash A\ \true$.
+
+  \item Projection: \ $A \land B \semicolon \cdot \vdash A\ \true$.
+
+  \item Exclusion: \ $A \lor B \semicolon A \vdash B\ \true $.
+
+  \item Refutation: \ $\neg A \semicolon \cdot \vdash A\ \false$.
+
+  \item De Morgan: \ $\neg(A \land B) \semicolon \cdot \vdash \neg A \lor \neg B\ \true$.
+\end{enumerate}
+
+\paragraph{Question 2} Give the proof (and refutation) terms corresponding to the derivations in Question 1.
+
+% question 3 from Alcock et al.
+\paragraph{Question 3} Let $\mathsf{upc}(p) := \lamu{u}{A}{\contra{p}{A}{u}}$ for some proof term $\var{p}{A}$ in the calculus for classical logic as introduced in Lectures 9 and 10.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Show that $\var{p}{A} \semicolon \cdot \vdash \mathsf{upc}(p) : A\ \true$.
+
+  \item Show that for all $\var{k}{\neg A}$, we have $\contra{\mathsf{upc}(p)}{A}{k} \mapsto \contra{p}{A}{k}$.
+
+  \item A term $p : A\ \true$ corresponds to a proof of $A$. 
+    What proof (with respect to $p$) corresponds to $\mathsf{upc}(p)$?
+    Describe your answer intuitively in prose.
+    \emph{(Hint: the $\mathsf{u}$ stands for ``unnecessary''.)}
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2024P9Q13(a), 2023P9Q13(a), 2021P8Q15(a).
+
+\subsection*{X. Continuation-Passing Style}
+
+% 2022P9Q13(a)
+\paragraph{Question 4} Using the typed lambda calculus with continuations as introduced in Lecture 10,
+give well-typed terms corresponding to the following classical tautologies:
+
+\begin{enumerate}[label=(\alph*)]
+  \item Double-negation elimination: \ $\neg\neg X \to X$.
+
+  \item Law of excluded middle: \ $X \lor \neg X$.   
+
+  \item Pierce's law: \ $((X \to Y) \to X) \to X$.
+
+  \item Contraposition: \ $(X \to Y) \to \neg Y \to \neg X$.
+
+  \item De-Morgan: \ $\neg(A \land B) \to \neg A \lor \neg B$.
+\end{enumerate}
+
+% YH, aim is to shine some intuition on the operational behaviour of the continuation calculus
+% part (a) inspired from the solution of Q4 from Alcock et al.
+% part (b) inspired from 2021P9Q15(a). The original question asks for every : (X -> Bool) -> List X -> Bool,
+% which won't iterate through the whole list even without continuations. 
+\paragraph{Question 5} 
+Intuitively, $(\mathsf{letcont}\ \var{u}{\neg X}.\ e)$ marks a program point $u$ that is available in $e$,
+like a label in assembly code.
+We can jump to $u$ by supplying an item of type $X$ using $\mathsf{throw}$, for example,
+  \[ 
+    1 + (\mathsf{letcont}\ \var{u}{\neg \mathsf{nat}}.\ (\mathsf{throw}(u, 2) + 3))
+      \rightsquigarrow
+    1 + 2.
+  \]
+  
+\begin{enumerate}[label=(\alph*)]
+  \item Explain the operational behaviour of your proof of Pierce's law in Question 4.
+
+  \item We now extend the continuation calculus with natural numbers, a list type and its iterator $\mathsf{fold}$.
+  Write a function
+    \[\mathsf{product} : \mathsf{List}\ \mathsf{nat} \to \mathsf{nat}\]
+  such that $\mathsf{product}\ xs$ returns the product of all elements in $xs$, 
+  and it should stop iterating over the list as soon as it sees a $0$.
+\end{enumerate}
+
+% YH
+% aim: students should understand type-preserving transformations,
+% and have some intuitions on how CPS transformation works.
+\paragraph{Question 6} The CPS transformation $\Tdot{(-)}$
+turns the typed lambda calculus with continuations into STLC.
+On types, $\Tdot{(-)}$ is mutual-recursively defined with another transformation $\Tcirc{(-)}$
+\footnote{$\Tcirc{(-)}$ is sometimes called the \emph{value transformation}.}:
+  \[
+    \Tdot{X} \,:=\, \sim\qneg\Tcirc{X}
+  \]
+where $\qneg{X}$ is the abbreviation of $X \to p$ for some fixed type $p$.
+\begin{enumerate}[label=(\alph*)]
+  \item $\Tcirc{(-)}$ does nothing on base types. Define $\Tcirc{1}$ 
+  and its corresponding term transformation $\Tdot{\langle\rangle}$.
+  Intuitively, how does your transformation changes from the direct point of view
+  (having a value $\langle\rangle$)
+  to the continuation-passing point of view?
+
+  \item $\Tcirc{(-)}$ applies $\Tdot{(-)}$ recursively into sums and products. Define $\Tcirc{(X \times Y)}$ 
+  and its corresponding term transformation $\Tdot{\langle e_1, e_2\rangle}$.
+
+  \item $\Tcirc{(-)}$ applies itself recursively into continuations. Define $\Tcirc{(\neg X)}$ 
+  and its corresponding term transformation $\Tdot{\mathsf{(letcont}\ \var{u}{\neg X}.\ e)}$.
+
+  \item Define $\Tdot{(-)}$ for contexts and show that your transformations given in previous parts of this question
+  are \emph{type preserving}, i.e.~$\Gamma \vdash e : A \,\Longrightarrow\, \Tdot{\Gamma} \vdash \Tdot{e} : \Tdot{A}$.
+\end{enumerate}
+
+
+% Q5 from Alcock et al.
+\paragraph{Question 7} Use the $\mathsf{amb}$ primitive from Lecture 11 to implement a function
+\[
+  \mathsf{eq\text{-}at} : \alpha\ \mathsf{list} \to \alpha\ \mathsf{list} \to \mathsf{int} \times \mathsf{int}
+\]
+such that $\mathsf{eq\text{-}at}\ xs\ ys$ returns $(i,j)$ 
+if $\mathsf{nth}(xs, i) = \mathsf{nth}(ys, j)$ and fails otherwise.
+You may assume the existence of any helper functions without definition if clearly stated.
+
+% A qnegple question on angelic non-determinacy
+
+\paragraph{Tripos Questions} 2022P9Q13(a), 2021P9Q15(a), 2019P8Q13.
+
+\subsection*{XI. Dependent Types in Programming}
+
+% YH, partly inspired from 2020P8Q15(c)
+% aim: to read and write Agda types and qnegple definitions,
+% and to know that dependent pattern matching eliminates absurd cases.
+\paragraph{Question 8} 
+In Agda, the datatype \texttt{List} (parameterized over some type \texttt{A}) 
+is defined as:
+\begin{lstlisting}
+  data List (A : Set) : Set where
+    [] : List A
+    _::_ : A -> List A -> List A
+\end{lstlisting}
+The head, tail, and append functions have type signatures
+\begin{lstlisting}
+  hd : {A : Set} -> List A -> A
+  tl : {A : Set} -> List A -> List A
+  append : {A : Set} -> List A -> List A -> List A
+\end{lstlisting}
+
+\vspace{-0.5em}
+
+\begin{enumerate}[label=(\alph*)]
+  \item What does \texttt{\{A : Set\}} mean in the type signature of \texttt{tl}?
+  How do you supply this kind of argument to a function in Agda?
+
+  \item Give the type definition for vectors \texttt{Vec}, 
+  which are lists indexed by their length.
+
+  \item Give the type signatures and define the following functions on \texttt{Vec}:
+  \begin{enumerate}[label=(\roman*)]
+    \item \texttt{hd}, \texttt{tl}, and \texttt{append}.
+    \item \texttt{zip}, that takes two vectors (of the same length) and returns a vector of pairs.
+  \end{enumerate}
+  What properties do these functions have, comparing to their corresponding \texttt{List}-versions?
+
+  \item Is it possible to define \texttt{hd} for \texttt{List} in Agda?
+\end{enumerate}
+
+\paragraph{Tripos Question} 2020P8Q15(c).
+
+\subsection*{XII. Dependent Types in Theorem Proving}
+
+% YH, part (a) is Q6 from Alcock et al., part (b-c) from 2021P8Q15(c), 
+% part (d) inspired from 2023P9Q13(c) and 2022P9Q13(b)
+
+% aim: Pi-types are foralls, dependent induction principles,
+% definitional equality v.s. propositional equality
+% students can now easily handle past exam questions (since all of them are here)
+\paragraph{Question 9} This question considers the following code about natural numbers in Agda.
+\begin{lstlisting}
+  data Nat : Set where
+    Z : Nat
+    S : Nat -> Nat
+
+    add : Nat -> Nat -> Nat
+    add Z n = n
+    add (S m) n = S (add m n)
+
+    elim : 
+      (P : Nat -> Set) -> 
+      (caseZ : P Z) -> 
+      (caseS : (n : Nat) -> P n -> P (S n)) -> 
+      (n : Nat) -> P n
+    elim P caseZ caseS Z = caseZ
+    elim P caseZ caseS (S n) = caseS n (elim P caseZ caseS n)
+\end{lstlisting}
+\begin{enumerate}[label=(\alph*)]
+  \item What logical operator do $\Pi$-types (dependent functions, or dependent products) correspond to? 
+  Justify your answer.
+
+  \item Give a type stating that $\forall n\in \mathbb{N}.\, n + 0 = n$.
+  How do you prove this equation in Agda, and it be proved with \texttt{refl}?
+
+  \item From a logical point of view, what does \texttt{elim} mean?
+
+  \item From a functional-programming point of view, what does \texttt{elim} mean?
+\end{enumerate}
+
+
+% YH, Q7 + Q8 from Alcock et al.
+\paragraph{Question 10} This question considers the identity type $\id{e}{e'}{A}$
+in the dependently typed calculus as introduced in Lecture 12,
+with the following typing rules:
+\begin{center}
+  \begin{bprooftree}
+    \AxiomC{$\Gamma \vdash A\ \type$}
+    \AxiomC{$\Gamma \vdash e : A$}
+    \AxiomC{$\Gamma \vdash e' : A$}
+    \TrinaryInfC{$\Gamma \vdash \id{e}{e'}{A}\ \type$}
+  \end{bprooftree}
+  \
+  \begin{bprooftree}
+    \AxiomC{$\Gamma \vdash e : A$}
+    \UnaryInfC{$\Gamma \vdash \refl{e} : \id{e}{e}{A}$}
+  \end{bprooftree}
+
+  \vspace{1em}
+
+  \begin{bprooftree}
+    \AxiomC{$\Gamma \vdash A\ \type$}
+    \AxiomC{$\Gamma, \var{x}{A} \vdash B\ \type$}
+    \AxiomC{$\Gamma \vdash e : \id{e_1}{e_2}{A}$}
+    \AxiomC{$\Gamma \vdash e' : \sub{e_1 / x}{B}$}
+    \QuaternaryInfC{$\Gamma \vdash \subst{x}{A}{B}{e}{e'} : \sub{e_2 / x}{B}$}
+  \end{bprooftree}
+\end{center}
+
+\begin{enumerate}[label=(\alph*)]
+  \item Let $A \to B$ stands for the non-dependent function type, i.e.~$\Pitype{x}{A}{B}$ where $x$ is not free in $B$.
+  Given $\Gamma \vdash A\ \type$, we define
+  \[
+    \mathsf{sym}_A := 
+    \lam{x}{A}{
+      \lam{y}{A}{
+        \lam{p}{\id{x}{y}{A}}{
+          \subst{z}{A}{\id{z}{x}{A}}{p}{\refl{x}}
+        }}}.
+  \]
+  Show that $\Gamma \vdash \mathsf{sym}_A : \Pitype{x}{A}{\Pitype{y}{A}{(\id{x}{y}{A} \to \id{y}{x}{A})}}$.
+
+  \item Given $\Gamma \vdash A\ \type$, define a term $\mathsf{trans}_A$ such that
+  \[
+    \Gamma \vdash \mathsf{trans}_A : 
+      \Pitype{x}{A}{\Pitype{y}{A}{\Pitype{z}{A}{
+        (\id{x}{y}{A} \to \id{y}{z}{A} \to \id{x}{z}{A})
+      }}}.
+  \]
+
+  \item Given $\Gamma \vdash A\ \type$ and $\Gamma \vdash B\ \type$, define a term $\mathsf{cong}_{A,B}$ such that
+  \[
+    \Gamma \vdash \mathsf{cong}_{A, B} : 
+      \Pitype{x}{A}{\Pitype{y}{A}{\Pitype{f}{A \to B}{
+        (\id{x}{y}{A} \to \id{\app{f}{x}}{\app{f}{y}}{B})
+      }}}.
+  \]
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2023P9Q13(c), 2022P9Q13(b), 2021P8Q15(c).
+
+\section*{Extensions}
+
+The following optional exercises further explore the topics introduced in the lectures. These questions might not be the most helpful ones for preparing the tripos, but they are surely interesting to think about if you enjoy type theory. Use the extension keywords to venture even further beyond the course.
+
+% YH
+\paragraph{Question C1}
+We never get to formally define the operational semantics
+for the typed lambda calculus with continuations.
+To do that, we first need to define \emph{evaluation contexts} $\hole{-}$
+ (not to be confused with type contexts $\Gamma$):
+\[ 
+  \mathit{Contexts}\quad \hole{-} := - \,\mid\, \hole{\app{-}{e}} \,\mid\, \hole{\app{v}{-}}
+\]
+where ``$-$'' is a hole, $e$ stands for expressions, and $v$ stands for values.
+In other words, $\hole{e}$ means that $\hole{-}$ is the ``code environment'' surrounding $e$.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define the reduction rule for $\mathsf{letcont}$ and $\mathsf{throw}$.
+
+  \item Extend the definition of $\hole{-}$ to terms associated with product types and sum types.
+
+  \item In your definition, what does the following expression evaluates to?
+    \[
+      \mathsf{letcont}\ \var{u}{\neg \mathsf{nat}}.\ 
+        (\lam{x}{nat}{\lam{y}{nat}{x + y}})\ \
+        (\mathsf{throw}(u, 0))\ \
+        (\mathsf{throw}(u, 1))\ \
+    \]
+
+  \item What happens if we switch $\hole{\app{v}{-}}$ to $\hole{\app{e}{-}}$
+  in the definition of $\hole{-}$?
+
+  % \item Does the CPS-transformation $\Tdot{(-)}$ preserve the operational semantics?
+  % In other words, is it true that 
+  % $e_1 \rightsquigarrow e_2 \,\Longrightarrow\, \Tdot{e_1} \rightsquigarrow^* \Tdot{e_2}$?
+\end{enumerate}
+
+% Q11 from Alcock et al.
+\paragraph{Question C2} After giving your answer in Question 9 part (a), we are still missing a logical operator.
+\begin{enumerate}[label=(\alph*)]
+  \item What operator are we missing?
+
+  \item Extend the syntax of the dependently typed language introduced in the lectures with this dual of $\Pi$-types 
+  (also called \emph{$\Sigma$-types} or \emph{dependent sums}) 
+  \footnote{$\Sigma$-types are also known as dependent pairs, and very confusingly, dependent products.}
+  and give suitable typing rule for them.
+  (Research ``dependent sums'' if you are unsure.)
+
+  \item In first-order logic, the axiom of choice can be stated as
+    \[
+      (\forall x \in A.\ \exists y \in B.\ P (x, y))
+        \Rightarrow
+      (\exists f : A \to B.\ \forall x \in A.\ P(x, f(x))). 
+    \]
+  Given $\Gamma \vdash A\ \type$ and $\Gamma, \var{x}{A} \vdash B\ \type$,
+  give a type $\Gamma \vdash \mathsf{AC}\ \type$ corresponding to the axiom of choice.
+
+  \item Define a term $\Gamma \vdash \mathsf{ac} : \mathsf{AC}$.
+\end{enumerate}
+
+% YH, a question on the real J-rule, inspired from Q12 of Alcock, 3.1+3.2 of Li
+\paragraph{Question C3} 
+The lecture note says that the $\mathsf{subst}$ rule for equality elimination
+is ``not the most general form''.
+Its most general form, also known as the \emph{J-rule}, is given below.
+(In this question, we omit the type information and subscripts when it is clear.)
+\begin{center}
+  \begin{bprooftree}
+    \AxiomC{$\Gamma \vdash A\ \type$}
+    \noLine
+    \UnaryInfC{$\Gamma \vdash e : \id{e_1}{e_2}{A}$}
+
+    \AxiomC{$\Gamma, \var{x}{A}, \var{y}{A}, \var{p}{\id{x}{y}{A}} \vdash B\ \type$}
+    \noLine
+    \UnaryInfC{$\Gamma, \var{z}{A} \vdash e' : \sub{z / x, z / y, \refl{z} / p}{B}$}
+    
+    \BinaryInfC{$\Gamma \vdash \Jrule{\var{x}{A}, \var{y}{A}, \var{p}{\id{x}{y}{A}}}{B}{e}{e'} : 
+    \sub{e_1 / x, e_2 / y, e / p}{B}$}
+  \end{bprooftree}
+\end{center}
+The J-elimination rule says that
+$e$ is a proof of $\id{e_1}{e_2}{A}$, 
+and $e'$ is the computation to be performed on $e_1$ (or equivalently, on $e_2$).
+Indeed, the definitional equality is given by
+\[
+  \mathsf{J}(\refl{e}, e') \equiv \sub{e' / z}{e}.
+\]
+\begin{enumerate}[label=(\alph*)]
+  \item Show that the $\mathsf{subst}$ rule can be derived from $\mathsf{J}$.
+
+  \item Using your definitions of $\mathsf{sym}$ from Question 10, show that
+    \begin{enumerate}[label=(\roman*)]
+      \item $\mathsf{sym}(\refl{e}) \equiv \refl{e}$.
+      \item $\mathsf{trans}(\refl{e}, \refl{e}) \equiv \refl{e}$.
+    \end{enumerate}
+
+  \item For $\mathsf{sym}$ defined in Question 10, define
+  \[
+    \mathsf{SymInv} \,:=\, \Pitype{x}{A}{\Pitype{y}{A}{\Pitype{p}{\id{x}{y}{A}}{
+      \id{\mathsf{sym}\ y\ x\ (\mathsf{sym}\ x\ y\ p)}{p}{\id{x}{y}{A}}
+    }}}.
+  \]
+  Show that $\Gamma \vdash \mathsf{SymInv}\ \type$ and define a term 
+  $\Gamma \vdash \mathsf{syminv} : \mathsf{SymInv}$.
+  You will need to use $\mathsf{J}$.
+\end{enumerate}
+
+
+\paragraph{Extension Keywords} Delimited continuations, call/cc, languages with dependent types (Agda, Coq, Idris2, Lean), Martin-L\"of type theory, the Calculus of Constructions, J-elimination, homotopy type theory.
+
+\end{document}

@@ -1,0 +1,229 @@
+\documentclass[11pt,a4paper,twoside]{article}
+
+\include{packages}
+
+\begin{document}
+\begin{center}
+{\Huge Part II Types: Example Sheet 1}\\
+\vspace{1.0em}
+{\large Yulong Huang and Yufeng Li}\\
+\vspace{0.5em}
+{\small Department of Computer Science and Technology \\ University of Cambridge \\ Oct 2024}\\
+\vspace{1.0em}
+\small{\textit{The tips and some questions are due to the previous example sheet by Nathanael Arkor, Dylan McDermott, Sam  Steenkamp, Domagoj Stolfa, et al., which has questions from Benjamin C.~Pierce and Andrew M.~Pitts.}}
+\end{center}
+
+\section*{Tips}
+
+\begin{itemize}
+
+\item Draw proof trees in landscape (if by hand, it helps to start from the bottom). If your proof tree gets
+too large then break it up into named sub-trees. In \LaTeX, it would be helpful to use proof-drawing packages such as 
+\texttt{proof}, \texttt{ebproof}, and \texttt{bussproofs}. 
+
+\item Collate all the typing rules you have come across in lectures so far into a ``cheat sheet''. Group by
+the type system (simply-typed-calculus, polymorphic-calculus, etc.). Pair up introduction and
+elimination rules and group related types (e.g.~sums and products). Update it as the lecture course
+continues: you’ll be glad you did when it comes to exam time!
+
+% \item When writing proofs, it can sometimes be ambiguous to say that something holds ``by induction''
+% when you mean ``by the inductive hypothesis''. When that is the case, try to be clear about what you
+% are using.
+
+% \item Write structured proofs with clear numberings and logical hierarchy. An example proof of the weakening lemma is given, and look Leisie Lamport's essay for its origin.
+
+\end{itemize}
+
+\section*{Exercises}
+
+The following exercises are about the topics covered from Lectures 1 to 4.
+
+\subsection*{I. Simply-Typed Lambda Calculus}
+
+% Pierce TPL 9.2.2
+\paragraph{Question 1} Show, by drawing proof trees of the typing derivations, that the following terms have the indicated types.
+
+\begin{enumerate}[label=(\alph*)]
+  \item $\var{f}{\Bool \to \Bool} \vdash \app{f}{(\ifthen{\false}{\true}{\false})} : \Bool$
+  \item $\var{f}{\Bool \to \Bool} \vdash \lam{x}{\Bool}{\app{f}{(\ifthen{x}{\false}{x}})} : \Bool \to \Bool$
+\end{enumerate}
+
+We now consider STLC with only variables, lambda abstractions, and applications, with their typing rules shown below.
+
+\begin{center}
+  \begin{bprooftree}
+    \AxiomC{$\var{x}{X} \in \Gamma$}
+    \RightLabel{\scriptsize{Var}}
+    \UnaryInfC{$\Gamma \vdash x : X$}
+  \end{bprooftree}
+  \qquad
+  \begin{bprooftree}
+    \AxiomC{$\Gamma, \var{x}{X} \vdash e : Y$}
+    \RightLabel{\scriptsize{Lam}}
+    \UnaryInfC{$\Gamma \vdash \lam{x}{X}{e} : X \to Y$}
+  \end{bprooftree}
+  \qquad
+  \begin{bprooftree}
+    \AxiomC{$\Gamma \vdash e : X \to Y$}
+    \AxiomC{$\Gamma \vdash e' : X$}
+    \RightLabel{\scriptsize{App}}
+    \BinaryInfC{$\Gamma \vdash \app{e}{e'} : Y$}
+  \end{bprooftree}
+\end{center}
+
+\vspace{-1.5em}
+
+\paragraph{Question 2} Prove exchange and weakening for Var, Lam, and App.
+
+\paragraph{Question 3} Prove substitution for Var, Lam, and App.
+It could be helpful to first define capture-avoiding substitution.
+
+\paragraph{Question 4} Define the reduction relation $e \leadsto e'$, then state and prove the progress lemma.
+
+\paragraph{Question 5} State and prove the preservation lemma.
+
+\paragraph{Question 6} Intuitively, type safety means that ``well-typed programs will not go wrong''. Give a formal statement of type safety and show that it is a simple corollary from progress and preservation.
+
+\paragraph{Tripos Question} 2020P8Q15(b).
+
+\subsection*{II. Curry--Howard Correspondence}
+
+We now consider STLC with $0$, $1$, $X \times Y$, $X + Y$, and $X \to Y$, as introduced in Lecture 2.
+
+\paragraph{Question 7} A logic system is consistent if one cannot prove false from an empty context. 
+\begin{enumerate}[label=(\alph*)]
+  \item What is the interpretation of false in STLC, from the Curry--Howard point of view? 
+  \item Why does termination (well-typed closed programs terminate) imply the consistency of STLC?
+\end{enumerate}
+
+% due to Nathanael Alcock
+\paragraph{Question 8} 
+Under the Curry--Howard correspondence, a proposition $P$ is represented by a
+type $X$, and proving $P$ corresponds to providing a term $p$ such that $\cdot
+\vdash p : X$.
+\begin{enumerate}[label=(\alph*)]
+    \item We represent the negation $\neg P$ by a type $X \to 0$. Why is
+        this a reasonable representation (using your intuition from
+        propositional logic)?
+
+    \item Try to prove De Morgan's laws by converting each propositional
+        formula to a type and providing a term of that type in the empty
+        context. \emph{(Hint: not every law holds.)}
+        \begin{enumerate}[label=(\roman*)]
+            \item $\neg P \land \neg Q \, \supset \neg (P \lor Q)$
+            \item $\neg (P \lor Q) \supset \neg P \land \neg Q$
+            \item $\neg P \lor \neg Q \, \supset \neg (P \land Q)$
+            \item $\neg (P \land Q) \supset \neg P \lor \neg Q$
+        \end{enumerate}
+
+    \item De Morgan's laws all hold in propositional logic. What does (b)
+        tell you about STLC in relation to propositional logic?
+    \footnote{
+      STLC with $\texttt{abort} : 0 \to X$ for any $X$ actually corresponds
+      to a form of logic called intuitionistic logic.}
+\end{enumerate}
+
+\paragraph{Tripos Question} 2020P8Q15(a).
+
+\subsection*{III. Logical Relations}
+
+\paragraph{Question 9} This question considers STLC with $0$, $1$, and $X \to Y$, as introduced in Lecture 3, and proving its termination via the logical relation $\Halt_X$.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Define $\Halt_X$ such that 
+    $e \in \Halt_X \Longleftrightarrow \cdot \vdash e : X \wedge e\text{ halts}$,  
+  and state the closure property.
+
+  \item Suppose we have proved closure, and we would like to show that
+    \[ \cdot \vdash e : X \;\Longrightarrow\; e \in \Halt_X. \]
+  Can we prove it directly by induction? 
+  Give the prove if you think so, otherwise explain what is the problem.
+  \emph{(Hint: the induction hypothesis cannot be applied to $\sub{v / x}{e}$!)}
+
+  \item We can prove part (b) by induction if the following lemma is true:
+    \[ 
+      \var{x}{X} \vdash e : Z \;\wedge\; 
+      v \in \Halt_X \;\Longrightarrow\; 
+      \sub{v / x}{e} \in \Halt_Z. 
+    \]
+  Again, can we show this lemma by induction?
+
+  \item State the fundamental lemma of $\Halt_X$ and prove it for the lambda case.
+
+  \item Extend $\Halt_X$ to support product types $X \times Y$.
+  
+  \item Extend $\Halt_X$ to support sum types $X + Y$.
+\end{enumerate}
+
+\paragraph{Tripos Questions} 2024P8Q13, 2023P8Q13.
+
+\subsection*{IV. System F}
+
+% Exercise 9 from Andy's 2016-17 exercise sheet
+\paragraph{Question 10} For each of the following System F typing judgements, is there a System F type $A_i$ (highlighted in red) that makes the judgement provable? If so, state $A_i$ and write its typing derivation, otherwise explain why a valid typing derivation cannot exist.
+\begin{enumerate}[label=(\alph*)]
+  \item $\newcon \vdash \lam{x}{(\fora{\alpha}{\alpha})}{\Lam{\beta}{(\app{x}{\beta})}} : {\color{OrangeRed}{A_1}}$
+  \item $\newcon \vdash \Lam{\alpha}{\lam{x}{\alpha}{\Lam{\beta}{(\app{x}{\beta})}}} : {\color{OrangeRed}{A_2}}$
+  \item $\newcon \vdash \lam{x}{{\color{OrangeRed}{A_3}}}{\Lam{\alpha}{(\app{\app{x}{(\alpha \to \alpha)}}{(\app{x}{\alpha})})}} : {\color{OrangeRed}{A_3}} \to \fora{\alpha}{\alpha}$
+  \item $\newcon \vdash \lam{x}{{\color{OrangeRed}{A_4}}}{\Lam{\alpha}{(\app{\app{x}{(\alpha \to \alpha)}}{(\app{x}{\alpha})})}} : {\color{OrangeRed}{A_4}} \to \fora{\alpha}{(\alpha \to \alpha)}$
+  \item $\newcon \vdash \Lam{\alpha}{\lam{x}{{\color{OrangeRed}{A_5}}}{(\app{\app{x}{(\alpha \to \alpha)}}{(\app{x}{\alpha})})}} : \fora{\alpha}{(\alpha \to \alpha)}$
+\end{enumerate}
+
+\paragraph{Tripos Question} 2021P8Q15(b).
+
+\section*{Extensions}
+
+The following optional exercises further explore the topics introduced in the lectures. These questions might not be the most helpful ones for preparing the tripos, but they are surely interesting to think about if you enjoy type theory. Use the keywords to venture even further beyond the course.
+
+% due to Alcock et al.
+\paragraph{Question A1} This question considers the $(1, \to)$ fragment of STLC (i.e.~with unit, variables, lambda abstractions, and applications). 
+
+\begin{enumerate}[label=(\alph*)]
+  \item Without using exchange or substitution, show that STLC has the \emph{simultaneous substitution} property: 
+  if $\var{x_1}{X_1}, \cdots, \var{x_n}{X_n} \vdash e' : Y$, and $\Gamma \vdash e_i : X_i$ for each $i$,
+  then $\Gamma \vdash \sub{e_1 / x_1, \cdots, e_n / x_n}{e} : Y$.
+
+  \item Show that exchange and substitution follows from simultaneous substitution.
+
+  \item Propositional logic has the \emph{contraction} property:
+  if $\Gamma, X, X \vdash P$, then $\Gamma, X \vdash P$.
+  State the contraction property for STLC from the Curry--Howard point of view and prove it.
+\end{enumerate}
+
+% due to Yufeng Li, and CST 2016–17 Part II Types – Exercise Sheet
+\paragraph{Question A2} This question considers the $(1, \to)$ fragment of STLC.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Show that if $\Gamma \vdash e : X$, then $\mathit{fv}(e) \subseteq \mathit{dom}(\Gamma)$,
+  where $\mathit{fv}(e)$ is the set of free variables in $e$ 
+  and $\mathit{dom}(\Gamma)$ is the set of variables assumed in $\Gamma$.
+
+  \item Show that if $\cdot \vdash e : X$, then $e$ must be \emph{closed}, i.e.~has no free variables.
+\end{enumerate}
+
+% due to Pierce TPL 9.3.2, Shaun Steenkamp, Dylan McDermott, and Yufeng Li
+\paragraph{Question A3} This question considers the $(0, 1, \to)$ fragment of STLC.
+
+\begin{enumerate}[label=(\alph*)]
+  \item Show the \emph{uniqueness of typing} for STLC, i.e.~if $\Gamma \vdash e : X$ and $\Gamma \vdash e : X'$,
+  then $X = X'$.
+
+  \item Show that \emph{self-application} is not typable in STLC, i.e.~there exists no $(\Gamma, e, X)$
+  such that $\Gamma \vdash \app{e}{e} : X$.
+
+  \item Show that the Y combinator, $\lambda f . (\lambda x . f\ (x\ x))\ (\lambda x . f\ (x\ x))$,
+  is not typable in STLC.
+
+  \item Show that for some type $X$, there exists no well-typed closed term $Y$ such that 
+  $\app{\app{Y}{f}}{v} \rightsquigarrow^* \app{\app{f}{(\app{Y}{f}})}{v}$,
+  for all $\cdot \vdash f : (X \to X) \to X \to X$ and $\cdot \vdash v : X$.
+  Is this true for every type $X$?
+\end{enumerate}
+
+% due to Yufeng Li
+\paragraph{Question A4} 
+In Lecture 2, we saw 4 different terms corresponding to the same logical derivation of $P, P \vdash P \wedge P \text{ true}$. What information from the type-theoretic derivation did we forget in the logical derivation?
+
+\paragraph{Extension Keywords} Simultaneous substitution, de Bruijn indices, Y-combinator, strong normalization proof, Heyting algebras, Curry--Howard isomorphism.
+
+\end{document}
