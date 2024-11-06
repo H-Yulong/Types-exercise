@@ -154,14 +154,14 @@ such that $\mathsf{eq\text{-}at}\ xs\ ys$ returns $(i,j)$
 if $\mathsf{nth}(xs, i) = \mathsf{nth}(ys, j)$ and fails otherwise.
 You may assume the existence of any helper functions without definition if clearly stated.
 
-% A qnegple question on angelic non-determinacy
+% A simple question on angelic non-determinacy
 
 \paragraph{Tripos Questions} 2022P9Q13(a), 2021P9Q15(a), 2019P8Q13.
 
 \subsection*{XI. Dependent Types in Programming}
 
 % YH, partly inspired from 2020P8Q15(c)
-% aim: to read and write Agda types and qnegple definitions,
+% aim: to read and write Agda types and simple definitions,
 % and to know that dependent pattern matching eliminates absurd cases.
 \paragraph{Question 8} 
 In Agda, the datatype \texttt{List} (parameterized over some type \texttt{A}) 
@@ -383,7 +383,7 @@ $e$ is a proof of $\id{e_1}{e_2}{A}$,
 and $e'$ is the computation to be performed on $e_1$ (or equivalently, on $e_2$).
 Indeed, the definitional equality is given by
 \[
-  \mathsf{J}(\refl{e}, e') \equiv \sub{e' / z}{e}.
+  \mathsf{J}(\refl{e}, e') \equiv \sub{e / z}{e'}.
 \]
 \begin{enumerate}[label=(\alph*)]
   \item Show that the $\mathsf{subst}$ rule can be derived from $\mathsf{J}$.
