@@ -132,7 +132,7 @@ type $X$, and proving $P$ corresponds to providing a term $p$ such that $\cdot
 
 \begin{enumerate}[label=(\alph*)]
   \item Define $\Halt_X$ such that 
-    $e \in \Halt_X \Longleftrightarrow \cdot \vdash e : X \wedge e\text{ halts}$,  
+    $e \in \Halt_X \Longrightarrow \cdot \vdash e : X \wedge e\text{ halts}$,  
   and state the closure property.
 
   \item Suppose we have proved closure, and we would like to show that
@@ -147,7 +147,7 @@ type $X$, and proving $P$ corresponds to providing a term $p$ such that $\cdot
       v \in \Halt_X \;\Longrightarrow\; 
       \sub{v / x}{e} \in \Halt_Z. 
     \]
-  Again, can we show this lemma by induction?
+  Again, can we show the above lemma by induction?
 
   \item State the fundamental lemma of $\Halt_X$ and prove it for the lambda case.
 
