@@ -1,0 +1,640 @@
+\documentclass[11pt,a4paper,twoside]{article}
+
+\include{packages}
+
+\begin{document}
+\begin{center}
+  {\Huge Part II Types: Example Sheet Solutions}\\
+  \vspace{1.0em}
+  {\large Yulong Huang and Yufeng Li}\\
+  \vspace{0.5em}
+  {\small Department of Computer Science and Technology \\ University
+  of Cambridge \\ Oct 2026}\\
+  \vspace{1.0em}
+  \small{\textit{The tips and some questions are due to the previous
+      example sheet by Nathanael Arkor, Dylan McDermott, Sam  Steenkamp,
+      Domagoj Stolfa, et al., which has questions from Benjamin C.~Pierce
+  and Andrew M.~Pitts.}}
+\end{center}
+
+\section*{Solutions}
+
+This document provides solutions to the problems set in the three example sheets.
+Answers to the simple warm-up questions are sometimes omitted or presented with
+just the crucial steps.
+
+\section*{Example Sheet 1}
+
+\subsection*{I. Simply-Typed Lambda Calculus}
+
+\paragraph{Question 1-6} Omitted. These questions are warn-up exercises to remind
+the students what they learned in the Part IB Semantics course, and they should be 
+able to answer these questions fairly easily. It is also for the supervisors to check
+that students have correct understanding of the foundational concepts and good 
+styles of written proofs.
+
+\subsection*{II. Curry-Howard Correspondence}
+
+\subsection*{Question 7}
+
+\begin{enumerate}[label=(\alph*)]
+  \item False is interpreted as the empty type. 
+  \item Since there is no closed value of the empty type. So, by type-safety, any
+  closed program of the empty type must loop forever. Therefore, termination
+  proves that no closed program of the empty type exists, as it leads to a
+  contradiction.
+  \item No, a type system could be consistent while non-terminating. For example, we
+    can extend STLC with the following construct
+    \begin{center}
+      \begin{bprooftree}
+        \AxiomC{$\Gamma \vdash v : A$}
+        \RightLabel{\scriptsize{Loop}}
+        \UnaryInfC{$\Gamma \vdash \mathsf{loop}(v) : A$}
+      \end{bprooftree}
+      \qquad
+      \begin{bprooftree}
+        \AxiomC{}
+        \UnaryInfC{$\mathsf{loop}(v) \leadsto \mathsf{loop}(v)$}
+      \end{bprooftree}
+    \end{center}
+    which builds an infinite loop for every value of type $A$. Since there is no value of type $0$,
+    it cannot be used to prove false in an empty context and consistency still holds.
+\end{enumerate}
+%
+Students should be fully aware the of the motivation of proving termination: it is only required 
+if a language is viewed as a logic. In reality almost all programming languages are not terminating
+and termination does not matter. It is also important to know that this is a one-way implication.
+Of course, in many cases ensuring termination is crucial, for example in dependently typed 
+proof assisstants we must have logical consistency, and in eBPF we require termination
+to safely execute code in the kernal.
+
+\subsection*{Question 8} 
+
+\begin{enumerate}[label=(\alph*)]
+  \item The negation of $X$ is true if $X$ implies false.
+  \item The first step is to translate the propositions into types, which is always
+    in the form of $A_1 \to A_2 \to ... \to A_n$. Write down the outer level lambdas,
+    and see if a term of type $A_n$ can be constructed with the bound variables of types
+    $A_1\, ...\, A_{n-1}$.
+
+    \begin{enumerate}[label=(\roman*)]
+      \item $t_1 : (P \to 0) \times (Q \to 0) \to (P + Q) \to 0$\\
+        $ t_1 = 
+        \lam{f}{(P \to 0) \times (Q \to 0)}{
+          \lam{x}{P + Q}{
+            \case{x}{p}{q}{\app{(\fst\ f)}{p}}{\app{(\snd\ f)}{q}}
+          }
+        }$
+      \item $t_2 : ((P + Q) \to 0) \to (P \to 0) \times (Q \to 0)$\\
+        $ t_2 = 
+        \lam{f}{(P + Q) \to 0}{
+          (\lam{p}{P}{\app{f}{(\inl\ p)}}),
+          (\lam{q}{Q}{\app{f}{(\inr\ q)}})}$
+      \item $t_3 : (P \to 0) + (Q \to 0) \to P \times Q \to 0$\\
+        $ t_3 = 
+          \lam{f}{(P \to 0) + (Q \to 0)}{
+            \lam{x}{P \times Q}{
+              \case{f}{p}{q}{\app{p}{(\fst\ x)}}{\app{q}{(\snd\ x)}}
+            }
+          }$
+      \item $t_4 : ((P \times Q) \to 0) \to (P \to 0) + (Q \to 0)$\\
+        Impossible, cannot call the function of type $(P \times Q) \to 0$
+        with just $p : P$ or $q : Q$.
+    \end{enumerate}
+  
+  \item It means that, \emph{if interpreted directly}, STLC's corresponding logic proves
+    less propositions than the propositional logic. Note that it is imprecise to say
+    that STLC is weaker (proves less), as later in the course, we see that 
+    show that propositional logic can be encoded into intuitionistic logic.
+  
+\end{enumerate}
+%
+A ``puzzle'' question to test the ability of type-driven programming.
+It also prepares for the discussion of classical v.s. intuitionistic logic later.
+In Example Sheet 3 Question 1(e), they can prove the final de Morgan rule with
+classical logic.
+
+\subsection*{III. Logical Relations}
+
+\paragraph*{Question 9} 
+
+\begin{enumerate}[label=(\alph*)]
+  \item Omitted. Bookwork.
+  \item No, the proof fails in the lambda case. Precisely, we want to show that
+    if $\cdot \vdash \lam{x}{X}{e} : X \to Y$ then$ \lam{x}{X}{e} \in \Halt_{X \to Y}$.
+    We need to show that $\sub{v / x}{e} \in \Halt_Y$ for all $v : X$, by definition,
+    but the induction hypothesis cannot be applied to $\sub{v / x}{e}$.
+  \item No, the similar problem appears again in the lambda case.
+    We want to show that if $x : X \vdash \lam{y}{Y}{e} : Y \to Z$ and
+    $v \in \Halt_X$ then $\sub{v / x}{(\lam{y}{Y}{e})} \in \Halt_{Y \to Z}$, which requires us to show
+    that $\sub{v' / y}{\sub{v / x}{(\lam{y}{Y}{e})}}$ for all $v' \in \Halt_Y$.
+    Again, we cannot apply the induction hypothesis in this case.
+
+    The point of parts (b) and (c) is to make students re-invent the fundamental lemma.
+    We cannot prove the desired theorem directly by induction; we need the technique of 
+    \emph{proof by generalization}: showing a more general form such that 
+    the desired statement is an instance of it. 
+    We cannot generalize the statement as in part (c),
+    and for similar reasons, we cannot generalize to cases with a fixed
+    number of variables in the context. Therefore, we have to generalize it for an
+    arbitrary context $\Gamma$ and all possible closing substitutions for $\Gamma$, 
+    which leads to the form of the fundamental lemma.
+  \item 
+    We want to show that if $\Gamma \vdash \lam{x}{X}{e} : X \to Y$ and 
+    $v_1, ..., v_n \in \Halt_{\Gamma}$, then 
+      \[\sub{v_1 / x_1, ..., v_n / x_n}{(\lam{x}{X}{e})} \in \Halt_{X \to Y}.\]
+    By definition, we need to show that for all $v \in \Halt_X$ we have
+    $\sub{v_1 / x_1, ..., v_n / x_n, v / x}{e} \in \Halt_Y$, which is true by induction on
+    the subderivation $\Gamma , x : X \vdash e : Y$.
+  \item $e \in \Halt_{X \times Y}$ if
+    (1) $e$ halts and (2) $e \leadsto^* (e_1, e_2)$ with $e_1 \in \Halt_X$ and $e_2 \in \Halt_Y$.
+    Alternatively, it could be $e \in \Halt_{X \times Y}$
+    if $(\fst\ e) \in \Halt_X$ and $(\snd\ e) \in \Halt_Y$.
+    The two definitions should be equivalent, but the first one is recommended.
+
+    The recipe of defining logical realtions for termination is that a term is in
+    $\Halt$ if it reduces to a certain normal form and its sub-terms are also in $\Halt$
+    \emph{in a logical way}, which means that it is expected to have be a logical conjunction
+    for products, an implication for functions, etc. Therefore, the first form is
+    recommended as it follows the recipe. The second form based on eliminators, 
+    although equivalent, could fail if applied blindly to some other cases where
+    the eliminator refers to some arbitrary type, for instance see the next question.
+  \item $e \in \Halt_{X + Y}$ if (1) $e$ halts and
+    (2)  $e \leadsto^* \inl\ e_1$ with $e_1 \in \Halt_X$ or $e \leadsto^* \inr\ e_2$
+    with $e_2 \in \Halt_Y$.
+
+    Some students are tempted to give the definition in terms of the eliminator of sums.
+    For example, it could be like:
+    $e \in \Halt_{X + Y}$ if $(\case{e}{x}{y}{e_1}{e_2}) \in \Halt_Z$ with certain conditions
+    on $e_1$ and $e_2$. This is not a well-founded definition, as the $\Halt$ relation is
+    defined \emph{inductively over the type}, this definition refers to an arbitrary type
+    $Z$ which is not a sub-term of $X + Y$. The first definition follows the recipe given
+    above and has no such problems.
+
+\end{enumerate}
+
+\subsection*{IV. System F}
+
+\paragraph*{Question 10} 
+
+\begin{enumerate}[label=(\alph*)]
+  \item $\fora{\alpha}{\alpha} \to \fora{\beta}{\beta}$
+  \item No solution, since $x : \alpha$ is not a big-lambda type.
+  \item $\fora{\beta}{\beta}$
+  \item $\fora{\beta}{\beta \to \beta}$
+  \item No solution. $A_5$ must be $\alpha$ to match the typing judgement, but 
+    that makes the function body ill-typed.
+\end{enumerate}
+%
+Another puzzle question to familiarize with the rules of System F.
+
+\section*{Example Sheet 2}
+
+\subsection*{V. Church Encoding in System F}
+
+\paragraph*{Question 1} 
+
+\begin{enumerate}[label=(\alph*)]
+  \item $\mathsf{unit} = \fora{\alpha}{\alpha \to \alpha}$\\
+    $() = \Lam{\alpha}{\lam{x}{\alpha}{x}}$ 
+  \item $\mathsf{empty} = \fora{\alpha}{\alpha}$\\
+    $\mathsf{abort}_X\ e = \app{e}{X}$
+  \item $\Bool = \fora{\alpha}{\alpha \to \alpha \to \alpha}$\\
+    $\mathsf{true} = \Lam{\alpha}{\ulam{x}{\ulam{y}{x}}}$\\ 
+    $\mathsf{false} = \Lam{\alpha}{\ulam{x}{\ulam{y}{y}}}$\\ 
+    $\mathsf{if}_X\ e\ \mathsf{then}\ e_1\ \mathsf{else}\ {e_2} = e\ X\ e_1\ e_2$ 
+  \item $\mathsf{nat} = \fora{\alpha}{\alpha \to (\alpha \to \alpha) \to \alpha}$\\
+    $\mathsf{zero} = \Lam{\alpha}{\ulam{z}{\ulam{s}{z}}}$\\ 
+    $\mathsf{suc}\ e = \Lam{\alpha}{\ulam{z}{\ulam{s}{\app{s}{(e\ \alpha\ z\ s)}}}}$\\ 
+    $\mathsf{iter}_X(e,\ 0 \mapsto e_z,\ \mathsf{suc}\ z \mapsto e_s) = e\ X\ e_z\ e_s$    
+  \item $\mathsf{option} A = \fora{\alpha}{\alpha \to (A \to \alpha) \to \alpha}$\\
+    $\mathsf{none} = \Lam{\alpha}{\ulam{z}{\ulam{f}{z}}}$\\ 
+    $\mathsf{some}\ e = \Lam{\alpha}{\ulam{z}{\ulam{f}{\app{f}{e}}}}$\\ 
+    $\mathsf{case}_X(e,\ \mathsf{none} \mapsto e_n,\ \mathsf{some}\ z \mapsto e_s) = e\ X\ e_n\ e_s$    
+\end{enumerate}
+%
+Church encoding is the most examed topic and very easy to learn with some practice.
+Students should be able to spot the pattern from completing this question: 
+the church encoding is defined in the form of
+$\fora{\alpha}{A_1 \to ... \to A_n \to \alpha}$, where each constructor of the datatype 
+corresponds to an argument $A_i$, and each $A_i$ is in the form of $B_1 \to ... \to B_m \to \alpha$,
+where $B_i$ corresponds to the arguments that constructor takes. 
+It is then straightforward to build the church-encoded constructors and the eliminators
+are simply applications.
+
+\paragraph*{Question 2}
+
+\begin{enumerate}[label=(\alph*)]
+  \item $\mathsf{pred} = \ulam{n}{\fst\ (\mathsf{iter}\ \mathsf{nat}\ (0,0)\ (\ulam{r}{(\snd\ r, \mathsf{suc}\ (\snd\ r))})\ n)}$.
+  
+  The key is to construct the following sequence
+    \[ (0,0), (0,1), (1,2), (2,3), ...\]
+    where the $n$-th term can be computed with 
+    $(\mathsf{iter}\ \mathsf{nat}\ (0,0) (\ulam{r}{(\snd\ r, \mathsf{suc}\ (\snd\ r))})\ n)$.
+    Taking the first projection of this expression gives the predecessor.
+  \item The key is to construct the following sequence
+    \[ \mathsf{none}, \mathsf{some}\ 0, \mathsf{some}\ 1, \mathsf{some}\ 2, ...\]
+    using $\mathsf{none}$ and $\mathsf{some}$ to distinguish the zero and succesor case
+    of the predecessor's input. The $n$-th term of the sequence can be computed with
+    \[
+      f\ n = \mathsf{iter}\ (\mathsf{option}\ \mathsf{nat})\ \mathsf{none}\ 
+      (\ulam{r}{\mathsf{case}(r,\ \mathsf{none} \mapsto \mathsf{some}\ 0,\ 
+      \mathsf{some}\ z \mapsto \mathsf{some}\ (\mathsf{suc}\ z))}).\]
+    We then define a function that maps the sequence back to natural numbers,
+    sending $\mathsf{none}$ to $0$ and $\mathsf{suc}\ z$ to $z$:
+    \[ 
+      g\ x = \mathsf{case}(x,\ \mathsf{none} \mapsto 0,\ \mathsf{some}\ z \mapsto z)
+      \]
+    and the predecessor of $n$ is simply $g\ (f\ n)$.
+    
+  \item O(n) steps.
+\end{enumerate}
+%
+Predecessor are also likely to appear in exams.
+Without the hints, this question would be very difficult to solve, but
+the hints and the warm-up in the previous question prepares students well enough
+for the challange. Those who understands the question and knows how to apply it 
+will have no problems with church encodings in exams.
+
+Sharper students might notice that, fundamentally, option types are used here
+because of the isomorphism $\mathbb{N} \cong 1 + \mathbb{N}$, and 
+the similar technique could be used to define pred-like functions for other datatypes,
+such as head and tail for lists. They might also relate the iterator with the generalized
+recursor in Example Sheet 3 Question 9.
+
+\paragraph*{Question 3}
+\begin{enumerate}[label=(\alph*)]
+  \item $\mathsf{fmap} = 
+    \Lam{\beta_1}{\Lam{\beta_2}{
+      \lam{f}{(\beta_1 \to \beta_2)}{
+        \lam{x}{(1+\beta_1)}{
+          \case{x}{()}{y}{\inl\ ()}{\inr\ (f\ y)}
+        }}}}$
+  \item $\mathsf{fold} = 
+    \Lam{\alpha}{
+      \lam{f}{(1 + \alpha \to \alpha)}{
+        \lam{n}{(\fora{\beta}{(1+\beta \to \beta) \to \beta})}{
+          n\ \alpha\ f
+        }}}$
+  \item $\mathsf{zero} = 
+    \Lam{\beta}{
+      \lam{f}{(1+\beta \to \beta)}{f\ (\inl\ ())}
+    }$\\
+    $\mathsf{suc} = 
+    \lam{n}{(\fora{\beta}{(1+\beta \to \beta) \to \beta})}
+      {\Lam{\beta}{
+        \lam{f}{(1+\beta \to \beta)}{f\ (\inr\ (n\ \beta\ f))}
+      }}$\\
+    Given an eliminator $\mathsf{iter}_X(e,\ 0 \mapsto e_z,\ \mathsf{suc}\ z \mapsto e_s)$,
+    define 
+      \[f = \lam{x}{(1 + X)}{\case{x}{()}{y}{e_z}{e_s\ y}}.\]
+    Then, the iterator is encoded as $(\mathsf{fold}\ X\ f\ n)$, which $\beta$-reduces to
+    $(n\ X\ f)$. The encoding has the desired behaviour:
+    \begin{itemize}
+      \item $\mathsf{iter}_X(\mathsf{zero},\ 0 \mapsto e_z,\ \mathsf{suc}\ z \mapsto e_s)
+        = \mathsf{zero}\ X\ f = f\ (\inl\ ()) = e_z$
+      \item $\mathsf{iter}_X(\mathsf{suc}\ n,\ 0 \mapsto e_z,\ \mathsf{suc}\ z \mapsto e_s)
+        = (\mathsf{suc}\ n)\ X\ f = f\ (\inr\ (n\ X\ f)) = e_s\ (n\ X\ f)
+        = e_s\ \mathsf{iter}_X(n,\ 0 \mapsto e_z,\ \mathsf{suc}\ z \mapsto e_s)$
+    \end{itemize}
+    So, $\mu F$ is indeed a valid encoding of the natural number.
+
+\end{enumerate}
+%
+This question gives students a taste of algebraic datatypes as initial algebras
+of polynomial functors. Question B2 considers the more general case. It is not supposed
+to be a hard question, but one that makes the students realize that church encoding
+is not an ad-hoc process driven by intuition but a sturctured, systemetic technique.
+
+\paragraph*{Question 4}
+\begin{enumerate}[label=(\alph*)]
+  \item $\mathsf{and} = \ulam{b_1}{\ulam{b_2}{b_1\ \mathsf{CBool}\ b_2\ b_1}}$
+  \item $\mathsf{or} = \ulam{b_1}{\ulam{b_2}{b_1\ \mathsf{CBool}\ b_1\ b_2}}$
+\end{enumerate}
+%
+The equivalent version of $a \land b = \ifthen{a}{b}{a}$ and 
+$a \lor b = \ifthen{a}{a}{b}$. Warm-up for the next exercise.
+
+\subsection*{VI. Existential and Semantic Types}
+
+\paragraph*{Question 5}
+\begin{enumerate}[label=(\alph*)]
+  \item $\mathsf{and} = \ulam{b_1}{\ulam{b_2}{\cho\ \beta\ b_1\ b_2\ b_1}} $
+  \item $\mathsf{extend} = \lam{b}{\exist{\beta}{\Bool}}{
+    \mathsf{let\ pack}\ (\beta, bool) = b\  \mathsf{in}\ 
+    \pack{\Bool \times \beta \to \beta \to \beta}{\beta}{(bool, \mathsf{and})}} $
+  \item $\mathsf{Nat} = \beta \times (\beta \to \beta) \times 
+    \fora{\alpha}{\beta \to \alpha \to (\alpha \to \alpha) \to \alpha} $
+\end{enumerate}
+%
+An important question to make students familiar with existential types and using them as 
+packages.
+
+\paragraph*{Question 6}
+\begin{enumerate}[label=(\alph*)]
+  \item Proof goal: if $e \leadsto e'$ and $e \in \sem{\Theta \vdash \fora{\alpha}{A}\ \type}\ \theta$,
+    then $e' \in \sem{\Theta \vdash \fora{\alpha}{A}\ \type}\ \theta$.
+    It suffices to show that (1) $e'$ halts and (2) $\forall (A', X).\ 
+    e'\ A' \in \sem{\Theta, \alpha \vdash A\ \type}\ (\theta, X / \alpha)$. 
+    We have (1) since $e \in \sem{\Theta \vdash \fora{\alpha}{A}\ \type}\ \theta$, so $e$ halts,
+    and therefore $e'$ halts because $e \leadsto e'$.
+    We also know that $e\ A' \leadsto e'\ A'$ and $e\ A' \in \sem{\Theta, \alpha \vdash A\ \type}\ (\theta, X / \alpha)$.
+    So, we can prove (2) by I.H.
+  \item Proof goal: if $e \in \sem{\Theta \vdash \sub{A / \alpha}{(\fora{\beta}{B})}\ \type}\ \theta$,
+    then $e \in \sem{\Theta , \alpha \vdash \fora{\beta}{B}\ \type}\ (\theta, \sem{\Theta \vdash A\ \type}\ \theta / \alpha)$.
+    It suffices to show that $\forall (B, Y).\ e\ B \in \sem{\Theta, \alpha, \beta \vdash B\ \type}\ (\theta, \sem{\Theta \vdash A\ \type}\ \theta / \alpha, Y / \beta)$.
+    Indeed, from assumption, we have
+    \begin{align*}
+      & e \in \sem{\Theta \vdash \fora{\beta}{\sub{A / \alpha}{B}}\ \type}\ \theta\\
+      \Longrightarrow\ & \forall (B, Y).\ e\ B \in \sem{\Theta, \beta \vdash \sub{A / \alpha}{B}\ \type}\ (\theta, Y / \beta) \quad \text{by def.}\\
+      \Longrightarrow\ & \forall (B, Y).\ e\ B \in \sem{\Theta, \beta, \alpha \vdash {B}\ \type}\ (\theta, Y / \beta, \sem{\Theta, \beta \vdash A\ \type}\ (\theta,  Y / \beta) / \alpha) \quad \text{by I.H.}\\
+      \Longrightarrow\ & \forall (B, Y).\ e\ B \in \sem{\Theta, \beta, \alpha \vdash {B}\ \type}\ (\theta, Y / \beta, \sem{\Theta \vdash A\ \type}\ \theta / \alpha) \quad \text{by weakening}\\
+      \Longrightarrow\ & \forall (B, Y).\ e\ B \in \sem{\Theta, \alpha, \beta \vdash B\ \type}\ (\theta, \sem{\Theta \vdash A\ \type}\ \theta / \alpha, Y / \beta) \quad \text{by exchange.}
+    \end{align*}
+  \item Proof goal: if $\Theta; \Gamma \vdash \Lam{\alpha}{e} : \fora{\alpha}{B}$, $\Theta \vdash \Gamma\ \mathsf{ctx}$,
+    $\theta$ interprets $\Theta$, $e_i \in \sem{\Theta \vdash A_i\ \type}\ \theta$, 
+    then $\sub{\overrightarrow{e} / \Gamma}{\sub{\overrightarrow{C} / \theta}{(\Lam{\alpha}{e})}} 
+    \in \sem{\Theta \vdash \fora{\alpha}{B}\ \type}\ \theta$.
+    Let $e' = \sub{\overrightarrow{e} / \Gamma}{\sub{\overrightarrow{C} / \theta}{{e}}}$.
+    It suffices to show that $\forall (C, X).\ (\Lam{\alpha}{e'})\ C \in \sem{\Theta , \alpha \vdash B\ \type}\ (\theta, X / \alpha)$.
+    We have $(\Lam{\alpha}{e'})\ C \leadsto \sub{C / \alpha}{e'}$. 
+    We can apply I.H. to show that $\sub{C / \alpha}{e'} \in \sem{\Theta , \alpha \vdash B\ \type}\ (\theta, X / \alpha)$
+    and prove the goal by closure. All conditions required to apply the I.H. can be easily derived from the assumption.
+  \end{enumerate}
+%
+Semantic types is way too technical and rarely examed. This question could be skipped
+if there is no time for it.
+
+
+\subsection*{VII. Type Systems with States}
+
+\paragraph*{Question 7}
+\begin{enumerate}[label=(\alph*)]
+  \item Omitted. Bookwork.
+  \item The extended rules are given as follows. There could be other ways to give types and 
+    operational semantics, for example, freeing a location could return the value stored in that location.
+    \begin{center}
+    \begin{bprooftree}
+      \AxiomC{$\Sigma; \Gamma \vdash e : \mathsf{ref}\ X$}
+      \RightLabel{\scriptsize{Free}}
+      \UnaryInfC{$\Sigma; \Gamma \vdash \mathsf{free}(e) : 1$}
+    \end{bprooftree}
+    \qquad
+    \begin{bprooftree}
+      \AxiomC{}
+      \UnaryInfC{$\langle \sigma, l : v \semicolon \mathsf{free}(l) \rangle \leadsto 
+      \langle \sigma \semicolon () \rangle$}
+    \end{bprooftree}
+    \qquad
+    \begin{bprooftree}
+      \AxiomC{$\langle \sigma, e \rangle \leadsto \langle \sigma', e' \rangle$}
+      \UnaryInfC{$\langle \sigma, \mathsf{free}(e) \rangle \leadsto \langle \sigma', \mathsf{free}(e') \rangle$}
+    \end{bprooftree}
+  \end{center}
+  \item Not anymore, since double-free and use-after-free are possible.
+\end{enumerate}
+%
+A simple question to test the understanding of type safely with states.
+
+\paragraph*{Question 8}
+\begin{enumerate}[label=(\alph*)]
+  \item \lstinline|f : (int -> int) -> int -> int|\\
+    \lstinline|r : (int -> int) ref|\\
+    \lstinline|recur : int -> int|
+  \item \lstinline|knot f = recur x = !r x = f recur x|
+  \item $\mathsf{fib} = $ \lstinline|knot (fun r n -> if n = 0 or n = 1 then 1 else r (n - 1) + r (n - 2))|\\
+    $\mathsf{loop} = $ \lstinline|knot (fun r -> r)|
+  \item Initialize the reference with \lstinline|r = ref (fun x -> x)| will do.
+\end{enumerate}
+%
+The point of this question is to make explicit connection that Landin's knot
+implements a fixed-point operator, and make sure that students know how to program
+with fixed points, in case they did not choose the Denotational Semantics course.
+Also helps to memorize the knot's construction.
+
+\subsection*{VIII. Monadic Type Systems}
+
+\paragraph*{Question 9}
+
+\begin{align*}
+  \mathsf{knot} = \ulam{f}{ \{
+    \mathsf{let}\ (r : \mathsf{ref}(\mathsf{int} \to T\ \mathsf{int}))  &= \{\mathsf{new}\ (\ulam{x}{\{\mathsf{return}\ 0\}})\}; \\
+    \mathsf{let}\ (recur : \mathsf{int} \to T\ \mathsf{int}) &= \{ \mathsf{return}\ (\ulam{n}{
+      \{ \letseq{r'}{\{ !r \}}{\mathsf{return}\ (f\ r'\ n)}\}}) \}; \\
+    \mathsf{let}\ (\_ : 1) &= \{ r := recur \}; \\
+    & \mathsf{return}\ recur \}
+  }
+\end{align*}
+%
+It is very easy to make small mistakes in this question. 
+I have not implemented a type-checker for the monadic language so there might be
+typo or mistakes in the code above as well.
+The purpose is not to be fully correct but to make students write some complicated programs with the monadic language,
+as its syntax and typing rules are not very intuitive.
+
+\paragraph*{Question 10}
+\begin{enumerate}[label=(\alph*)]
+  \item
+    \begin{enumerate}[label=(\roman*)]
+      \item $\eta_X = \ulam{x}{\{\mathsf{return}\ x\}}$
+      \item $\mu_X = \ulam{t}{\{\letseq{x}{t}{\letseq{y}{x}{y}}\}}$
+      \item $\mathsf{fmap} = \ulam{f}{\ulam{t}{\{\letseq{x}{t}{\mathsf{return}\ (f\ x)}\}}}$ 
+    \end{enumerate}
+  \item    
+    \begin{enumerate}[label=(\roman*)]
+      \item \begin{align*}
+          & \state{\sigma}{\letseq{y}{\mu_X(\app{\eta_{TX}}{v})}{\ret{y}}} \\
+          \reduces & \state{\sigma}{\letseq{y}{\mu_X(\{\ret{v}\})}{\ret{y}}} \\
+          \reduces & \state{\sigma}{\letseq{y}{\letseq{z}{v}{z}}{\ret{y}}} \\
+          \reduces & \state{\sigma}{\letseq{y}{\ret{v'}}{\ret{y}}} \\
+          \reduces & \state{\sigma}{\ret{v'}}
+        \end{align*}
+      \item \begin{align*}
+          & \state{\sigma}{\letseq{y}{\app{\app{\mathsf{fmap}}{f}}{\{\ret{v}\}}}{\ret{y}}}\\
+          \reduces & \state{\sigma}{\letseq{y}{\ret{f\ v}}{\ret{y}}} \\
+          \reduces & \state{\sigma}{\ret{v'}}
+        \end{align*}
+    \end{enumerate}
+  \item $\mathsf{bind} = \ulam{t}{\ulam{f}{\{\letseq{x}{t}{\letseq{y}{f\ x}{\ret{y}}} \}}}$.
+  Alternatively, $\mathsf{bind}\ x\ f = \mu_{TY}(\mathsf{fmap}\ f\ x)$.
+\end{enumerate}
+%
+This is another category-theoretic question, connecting the computational monad
+(with return and bind) with the categorical monad (with $\mu$ and $\eta$).
+The student might be unfamiliar with both, and in that case,
+covering the computational notion is crucial (more important than
+the monadic language taught in this course!) and the categorical definition
+is to spark their interests.
+
+\section*{Example Sheet 3}
+
+\subsection*{IX. Classical Logic}
+
+\paragraph*{Question 1} Omitted. Warm-up. Note that part (e) is done by a contradiction
+with $\neg (A \land B)$ followed by a contradiction with $\neg A \lor \neg B$.
+
+\paragraph*{Question 2} Omitted. Warm-up. 
+
+\paragraph*{Question 3}
+\begin{enumerate}[label=(\alph*)]
+  \item Omitted.
+  \item $\contra{\lamu{u}{A}{\contra{p}{A}{u}}}{A}{k} \mapsto \sub{k / u}{\contra{p}{A}{u}}
+  \mapsto \contra{p}{A}{k}$.
+  \item $\mathsf{upc}$ stands for \emph{unnecessary proof by contradiction}, which 
+    proves $A$ by assuming that $A$ is false, then proves $A$, and then prove $A$
+    by contradiction. 
+\end{enumerate}
+%
+A small question to test the understanding of Curry-Howard correspondence
+in this calculus. Occasionally students write unintentional UPCs and this
+is a gentle reminder!
+
+\subsection*{X. Continuation-Passing Style}
+
+\paragraph*{Question 4}
+\begin{enumerate}[label=(\alph*)]
+  \item $\lam{k}{\neg \neg X}{\letcont{u}{\neg X}{\throw{X}{(u,k)}}}$
+  \item $\letcont{u}{\neg(X \lor \neg X)}{\throw{X \lor \neg X}{
+    (u, \inr\ (\letcont{v}{\neg \neg X}{\throw{\neg X}{(u, \inl\ (\mathsf{dne}\ v))}}))
+    }}$\\
+    Alternatively, 
+    $\letcont{u}{\neg(X \lor \neg X)}{\throw{X \lor \neg X}{
+      (u, \inl\ (\letcont{v}{\neg X}{\throw{X}{(u, \inr\ v)}}))
+    }}$
+  \item $\lam{f}{((X \to Y) \to X)}{\letcont{u}{\neg X}{f\ (\lam{x}{X}{\throw{Y}{(u, x)}})}}$
+  \item $\lam{f}{(X \to Y)}{\lam{u}{\neg Y}{\letcont{v}{\neg\neg X}{
+    \throw{\neg X}{(u, f\ (\mathsf{dne}\ v))}}}}$
+  \item $\lam{k}{\neg(A \land B)}{\letcont{u}{\neg(\neg A \lor \neg B)}{
+    \throw{\neg A \lor \neg B}{(k, (e_1, e_2))}
+  }}$\\
+    where $e_1 = \letcont{v}{\neg A}{\throw{A}{(u, \inl\ v)}}$,
+    $e_2 = \letcont{v}{\neg B}{\throw{B}{(u, \inr\ v)}}$
+\end{enumerate}
+
+\paragraph*{Question 5}
+\begin{enumerate}[label=(\alph*)]
+  \item We create a program point that acts like a ``trap'' and pass it to $f$.
+    Inside $f$, if it uses its argument by applying it to some term of type $X$, 
+    the trap is activated and captures the value of type $X$ and returns it to us. 
+    Otherwise, $f$ produces some term of type $X$ on its own. 
+    Either way, we eventually get a term of type $X$.
+  \item $\lam{xs}{\mathsf{List}\ X}
+    \letcont{u}{\neg\nat}{\mathsf{fold}(xs, \mathsf{[]} \mapsto 0, (x, r) \mapsto \ifthen{x = 0}{\throw{\nat}{(u, 0)}}{x * r})}$ 
+\end{enumerate}
+
+\paragraph*{Question 6}
+\begin{enumerate}[label=(\alph*)]
+  \item $\Tcirc{1} = 1$, $\Tcirc{\langle\rangle} = \lam{k}{\qneg{1}}{\app{k}{\langle\rangle}} \,:\ \sim\qneg{1}$.
+    The transformation turns a value into a function that given any continuation,
+    supply the value into that continuation.
+  \item $\Tcirc{X \to Y} = \Tdot{X} \to \Tdot{Y}$\\
+    $\Tdot{(\lam{x}{X}{e})} = \lam{k}{\qneg(\Tdot{X} \to \Tdot{Y})}{\app{k}{(\lam{x}{\Tdot{X}}{\Tdot{e}})}} \,:\ \sim\qneg{(\Tdot{X} \to \Tdot{Y})}$\\
+    $\Tdot{(\app{e_1}{e_2})} = \lam{k}{\qneg{\Tcirc{Y}}}{\Tdot{e_1}\ (\lam{f}{\Tdot{X} \to \Tdot{Y}}{f\ \Tdot{e_2}\ k})} \,:\ \sim\qneg{\Tcirc{Y}}$ \\
+
+    $\Tcirc{(X \times Y)} = \Tdot{X} \times \Tdot{Y} $\\
+    $\Tdot{(e_1, e_2)} = \lam{k}{\qneg{\Tdot{X} \times \Tdot{Y}}}{k\ (\Tdot{e_1}, \Tdot{e_2})} \,:\ \sim\qneg{(\Tdot{X} \times \Tdot{Y})}$
+  \item $\Tcirc{(\neg{X})} =\ \qneg{\Tcirc{X}}$ \\
+    $\Tdot{(\letcont{u}{\neg X}{e})} = \lam{k}{\qneg{\Tcirc{X}}}{(\lam{u}{\sim\sim\qneg{\Tcirc{X}}}{\Tdot{e}})\ (\mathsf{dni}(k))}$
+    where $\mathsf{dni} = \lam{x}{X}{\lam{k}{\qneg{X}}}{k\ x}$. The inner application could also be written as a substitution,
+    as in the lecture slides.
+  \item Omitted. This should be done through parts (a-c).
+\end{enumerate}
+
+\paragraph*{Question 7} 
+\begin{align*}
+  \textsf{eq-at}\ xs\ ys & = \\
+  &\letseq{i}{\mathsf{amb}\ (\mathsf{length}\ xs)}{} \\
+  &\letseq{j}{\mathsf{amb}\ (\mathsf{length}\ ys)}{} \\
+  &\mathsf{assert}(\mathsf{nth}\ i\ xs = \mathsf{nth\ j\ ys}); \\
+  &(i, j)
+\end{align*}
+
+\subsection*{XI. Dependent Types in Programming}
+
+\paragraph*{Question 8}
+\begin{enumerate}[label=(\alph*)]
+  \item \lstinline|{A : Set}| means that \lstinline|A| is a type (\lstinline|Set|
+    is the type of small types) and the braces means that it is an implicit argument
+    to the function. Implicit arguments are typically inferred, since if we know the 
+    type of the input \lstinline|List Nat| we can infer that \lstinline|A = Nat|.
+    Implicit arguments can also be supplied explicitly with syntax \lstinline|hd {A = A} ls|.
+  \item The definition is given below.
+    \begin{lstlisting}
+      data Vec (A : Set) : (n : Nat) -> Set where
+        [] : Vec A 0
+        _::_ : {n : Nat} -> A -> Vec A n -> Vec A (suc n)
+    \end{lstlisting}
+  \item 
+    \begin{enumerate}[label=(\roman*)]
+      \item See code below.
+        \begin{lstlisting}
+          hd : {n : Nat} -> Vec A (suc n) -> A
+          hd (x :: xs) = x
+
+          tl : {n : Nat} -> Vec A (suc n) -> Vec A n
+          tl (x :: xs) = xs
+
+          append : {m n : Nat} -> Vec A m -> Vec A n -> Vec A (m + n)
+          append [] ys = ys 
+          append (x :: xs) ys = x :: (append xs ys)
+        \end{lstlisting}
+      \item See code below.
+        \begin{lstlisting}
+          zip : {n : Nat} -> Vec A n -> Vec B n -> Vec (A x B) n
+          zip [] [] = []
+          zip (x :: xs) (y :: ys) = (x , y) :: zip xs ys
+        \end{lstlisting}
+    \end{enumerate}
+    These are total functions and their counterparts for lists are partial functions.
+  \item No, there is no way to supply a term of type \lstinline|A| for the empty case.
+    In general, we cannot define partial functions in Agda (directly, we could for example
+    encode with the maybe monad).
+\end{enumerate}
+
+\subsection*{XII. Dependent Types in Theorem Proving}
+
+\paragraph*{Question 9}
+\begin{enumerate}[label=(\alph*)]
+  \item It corresponds to the $\forall$ operator: given an element $a \in A$, 
+    we get a proof of the predicate $B(a)$.
+  \item The code is given as the follows.
+  \begin{lstlisting}
+    idr : (n : Nat) -> add n Z == n
+    idr Z = refl
+    idr (S n) = cong S (idr n)
+  \end{lstlisting}
+  It is a proof by induction. We cannot use \lstinline|refl| directly in the succesor
+  case because \lstinline|add (S n) Z| is not \emph{definitionally} equal to \lstinline|S n|.
+  More specifically, the left hand side cannot convert to the right hand side
+  by the reflexive-transitive closure of reductions (this is an over-simplified explaination
+  that is not always applicable, since conversions can be defined without reductions).
+  \item The induction principle for the natural numbers.
+  \item The generalized iterator, where the successor's case has access
+    to the predecessor. This is also called a recursor.
+\end{enumerate}
+%
+This question gives students a taste of proof by induction in Agda.
+Being able to read \lstinline|elim| write \lstinline|idr| is enough for the exam. 
+The more important thing is to see the Curry-Howard correspondence 
+with dependent types.
+
+\paragraph*{Question 10}
+\begin{enumerate}[label=(\alph*)]
+  \item Omitted. Bookwork.
+  \item $\mathsf{trans}_A = \ulam{x}{\ulam{y}{\ulam{z}{
+    \lam{p}{\id{x}{y}{A}}{
+      \lam{q}{\id{y}{z}{A}}{
+        \subst{w}{A}{\id{x}{w}{A}}{q}{p}
+      }}}}}$
+  \item $\mathsf{cong}_{A,B} = \ulam{x}{\ulam{y}{\ulam{f}{
+    \lam{p}{\id{x}{y}{A}}{
+        \subst{w}{A}{\id{f\ x}{f\ w}{B}}{p}{\refl{(f\ x)}}
+      }}}}$
+\end{enumerate}
+%
+This question shows students some fundamental equational reasoning with
+the identity type and its (simplified) elimination rule, which could be
+not intuitive at first. The full elimination rule is explored further
+in Question C3.
+
+\end{document}
