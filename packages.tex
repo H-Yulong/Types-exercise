@@ -82,8 +82,12 @@
 \newcommand{\gooddot}{.\;\!}
 
 \newcommand{\lam}[3]{\lambda #1 \,{:}\, #2 .\; #3}
+\newcommand{\ulam}[2]{\lambda #1.\; #2}
 \newcommand{\Lam}[2]{\Lambda #1 \gooddot #2}
 \newcommand{\app}[2]{#1 \, #2}
+\newcommand{\inl}{\mathsf{inl}}
+\newcommand{\inr}{\mathsf{inr}}
+\newcommand{\case}[5]{\mathsf{case}(#1, \mathsf{inl}\,#2 \mapsto #4, \mathsf{inr}\,#3 \mapsto #5)}
 \newcommand{\fora}[2]{\forall #1 \gooddot #2}
 \newcommand{\exist}[2]{\exists #1 \gooddot #2}
 \newcommand{\newcon}{\cdot\, ; \cdot}
@@ -104,6 +108,8 @@
 \newcommand{\nat}{\mathsf{nat}}
 \newcommand{\state}[2]{\langle #1, #2 \rangle}
 \newcommand{\letseq}[3]{\mathsf{let}\ #1 = #2;\, #3}
+\newcommand{\letcont}[3]{\mathsf{letcont}\ #1 \,{:}\, #2. \; #3}
+\newcommand{\throw}[2]{\mathsf{throw}_{#1}\ #2}
 \newcommand{\ret}[1]{\mathsf{return}\ #1}
 \newcommand{\reduces}{\rightsquigarrow^*}
 \newcommand{\type}{\mathsf{type}}

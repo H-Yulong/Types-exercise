@@ -1,5 +1,5 @@
 # MAIN = sheet3
-MAIN = sheet1 sheet2 sheet3
+MAIN = sheet1 sheet2 sheet3 solution
 LATEXMK=latexmk -pdflatex -shell-escape
 .PHONY: mk
 

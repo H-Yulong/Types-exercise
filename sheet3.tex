@@ -13,7 +13,7 @@
   {\large Yulong Huang and Yufeng Li}\\
   \vspace{0.5em}
   {\small Department of Computer Science and Technology \\ University
-  of Cambridge \\ Oct 2024}\\
+  of Cambridge \\ Oct 2026}\\
   \vspace{1.0em}
   \small{\textit{Some questions are due to the previous example sheet
       by Nathanael Arkor, Dylan McDermott, Sam Steenkamp, Domagoj Stolfa,
@@ -85,7 +85,7 @@ the calculus for classical logic as introduced in Lectures 9 and 10.
     \emph{(Hint: the $\mathsf{u}$ stands for ``unnecessary''.)}
 \end{enumerate}
 
-\paragraph{Tripos Questions} 2024P9Q13(a), 2023P9Q13(a), 2021P8Q15(a).
+\paragraph{Tripos Questions} 2026P8Q13(a, b), 2024P9Q13(a), 2023P9Q13(a), 2021P8Q15(a).
 
 \subsection*{X. Continuation-Passing Style}
 
@@ -162,9 +162,10 @@ where $\qneg{X}$ is the abbreviation of $X \to p$ for some fixed type $p$.
 
   \item $\Tcirc{(-)}$ applies $\Tdot{(-)}$ recursively into sums,
     products, and functions.
-    Define $\Tcirc{(X \to Y)}$
-    and its corresponding term transformations
-    $\Tdot{(\lam{x}{A}{e})}$ and $\Tdot{(\app{e_1}{e_2})}$.
+    Define $\Tcirc{(X \to Y)}$, $\Tcirc{X \times Y}$
+    and the corresponding term transformations
+    $\Tdot{(\lam{x}{X}{e})}$, $\Tdot{(\app{e_1}{e_2})}$,
+    $\Tdot{(e_1, e_2)}$.
 
   \item $\Tcirc{(-)}$ applies itself recursively into continuations.
     Define $\Tcirc{(\neg X)}$
@@ -173,8 +174,8 @@ where $\qneg{X}$ is the abbreviation of $X \to p$ for some fixed type $p$.
 
   \item Define $\Tdot{(-)}$ for contexts and show that your
     transformations given in previous parts of this question
-    are \emph{type preserving}, i.e.~$\Gamma \vdash e : A
-    \,\Longrightarrow\, \Tdot{\Gamma} \vdash \Tdot{e} : \Tdot{A}$.
+    are \emph{type preserving}, i.e.~$\Gamma \vdash e : X
+    \,\Longrightarrow\, \Tdot{\Gamma} \vdash \Tdot{e} : \Tdot{X}$.
 \end{enumerate}
 
 % Q5 from Alcock et al.
@@ -191,7 +192,7 @@ definition if clearly stated.
 
 % A simple question on angelic non-determinacy
 
-\paragraph{Tripos Questions} 2022P9Q13(a), 2021P9Q15(a), 2019P8Q13.
+\paragraph{Tripos Questions} 2025P8Q13(a, b), 2022P9Q13(a), 2021P9Q15(a), 2019P8Q13.
 
 \subsection*{XI. Dependent Types in Programming}
 
@@ -234,10 +235,10 @@ The head, tail, and append functions have type signatures
     corresponding \texttt{List}-versions?
 
   \item Is it possible to define \texttt{hd} for \texttt{List} in Agda,
-    (with the type given above)?
+    with the type given above?
 \end{enumerate}
 
-\paragraph{Tripos Question} 2020P8Q15(c).
+\paragraph{Tripos Questions} 2025P8Q13(c), 2020P8Q15(c).
 
 \subsection*{XII. Dependent Types in Theorem Proving}
 
@@ -344,7 +345,7 @@ with the following typing rules:
     \]
 \end{enumerate}
 
-\paragraph{Tripos Questions} 2023P9Q13(c), 2022P9Q13(b), 2021P8Q15(c).
+\paragraph{Tripos Questions} 2026P9Q13(e), 2023P9Q13(c), 2022P9Q13(b), 2021P8Q15(c).
 
 \section*{Extensions}
 
